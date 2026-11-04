@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>El Barrio Decide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+/* Layout: gráfica de la lámina "El Barrio Decide": fondo crema, recuadros punteados redondeados,
+   cada vista toma el color de su etapa (1.1 rojo, 1.2 ocre, 2.1 verde, 2.2 turquesa).
+   Diseño de un solo tema claro, deliberado para calzar con el material impreso. */
+:root{
+  color-scheme:light;
+  --bg:#F7F0E1; --surface:#FFFCF5; --sunk:#EFE5D2; --ink:#1D1A17; --muted:#6A6157; --line:#CDBFA8;
+  --e11:#C24E38; --e11t:#EBC4BA; --e12:#A47A3E; --e12t:#E6D2B6; --e21:#2B8A38; --e21t:#C3DEC5; --e22:#079CA8; --e22t:#B2E0E3;
+  --soy:#3B6E8F; --quiero:#C2477E; --obj:#2A8A84; --obj-t:#C4E0DD;
+  --chip:#3D3B35; --chip-off:#BBB4AF; --on-accent:#FFFFFF; --ok:#2B8A38; --warn:#A47A3E;
+  --accent:var(--obj); --accent-t:var(--obj-t);
+  --z-R:#E2B92A; --z-C:#E07A3F; --z-EC:#B0436A; --z-A:#7A847E; --z-PH:#4B9858;
+  --f:"Montserrat","Helvetica Neue",Arial,sans-serif;
+  --r:14px;
+}
+body[data-e="11"]{--accent:var(--e11);--accent-t:var(--e11t)}
+body[data-e="12"]{--accent:var(--e12);--accent-t:var(--e12t)}
+body[data-e="21"]{--accent:var(--e21);--accent-t:var(--e21t)}
+body[data-e="22"]{--accent:var(--e22);--accent-t:var(--e22t)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f);font-size:15.5px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 56px}
+h1,h2,h3{font-family:var(--f);line-height:1.12;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.8rem,4.4vw,2.9rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.3rem;font-weight:800;letter-spacing:-.01em}
+h3{font-size:1.02rem;font-weight:700}
+p{margin:0}
+a{color:var(--accent)}
+.wrap{max-width:1180px;margin:0 auto}
+.narrow{max-width:580px;margin:0 auto}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+.num,.mono{font-variant-numeric:tabular-nums;font-weight:600}
+.lead{font-style:italic;font-weight:500;font-size:1.12rem;max-width:56ch}
+.etapa{font-weight:800;font-size:.95rem;letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}
+.eyebrow{font-weight:700;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* header */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:2px dashed var(--line);margin:0 calc(-1*max(16px,env(safe-area-inset-left,0px))) 26px;padding:10px max(16px,env(safe-area-inset-left,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.top .wrap{display:flex;gap:10px 18px;align-items:center;flex-wrap:wrap}
+.brand{text-decoration:none;color:var(--ink);font-weight:800;font-size:1.2rem;letter-spacing:-.02em;white-space:nowrap}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;flex:1 1 360px;min-width:0;scrollbar-width:none}
+nav.tabs a{white-space:nowrap;text-decoration:none;color:var(--muted);padding:6px 11px;border-radius:999px;font-size:.86rem;font-weight:600}
+nav.tabs a .n{font-size:.72rem;font-weight:800;margin-right:5px}
+nav.tabs a[data-e="11"] .n{color:var(--e11)} nav.tabs a[data-e="12"] .n{color:var(--e12)} nav.tabs a[data-e="21"] .n{color:var(--e21)} nav.tabs a[data-e="22"] .n{color:var(--e22)}
+nav.tabs a[aria-current="page"]{background:var(--accent);color:var(--on-accent)}
+nav.tabs a[aria-current="page"] .n{color:var(--on-accent)}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:4px;background:var(--chip);color:#fff;white-space:nowrap}
+.chip.off{background:var(--chip-off)}
+.chip i{width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block}
+.chip.live i{background:#7BE08E} .chip.local i{background:#F2C14E}
+.chip.ses{background:var(--accent)}
+
+/* superficies con recuadro punteado como en la lámina */
+.panel{background:var(--surface);border:2px dashed var(--accent);border-radius:var(--r);padding:20px}
+.panel.plain{border-color:var(--line)}
+.panel.fill{background:var(--accent-t);border-style:solid}
+.notice{border-radius:10px;padding:12px 14px;background:var(--e11t);font-size:.9rem;font-weight:500}
+.notice.info{background:var(--obj-t)}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+.heatgrid{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}
+@media (max-width:900px){.heatgrid{grid-template-columns:1fr}}
+.g3{grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr))}
+.empty{border:2px dashed var(--line);border-radius:var(--r);padding:28px;text-align:center;color:var(--muted)}
+.empty h3{color:var(--ink);margin-bottom:6px}
+
+/* formularios */
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:.93rem}
+label.f small{font-weight:500;color:var(--muted)}
+input[type=text],input[type=number],input[type=url],input[type=date],textarea,select{font:inherit;font-weight:500;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+textarea{min-height:96px;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);outline:none}
+fieldset{border:0;padding:0;margin:0;min-width:0}
+legend{font-weight:700;font-size:.93rem;margin-bottom:8px;padding:0}
+legend small{font-weight:500;color:var(--muted)}
+.btn{font:inherit;font-weight:700;cursor:pointer;border-radius:8px;border:2px solid var(--ink);background:var(--surface);color:var(--ink);padding:9px 16px;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.ghost{border:2px dashed var(--line)}
+.btn.sm{padding:5px 11px;font-size:.84rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.big{padding:14px 20px;font-size:1.05rem;width:100%}
+.mesas{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mesa{position:relative;cursor:pointer}
+.mesa input{position:absolute;opacity:0;inset:0}
+.mesa span{display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed var(--line);border-radius:10px;padding:10px 4px;font-weight:700;font-size:.8rem;background:#fff}
+.mesa span b{font-size:1.6rem;font-weight:800;line-height:1}
+.mesa input:checked+span{border-style:solid;border-color:var(--accent);background:var(--accent);color:var(--on-accent)}
+.mesa input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+
+/* tarjetas de categoría */
+.macro{border:2px dashed var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.macro[open]{border-color:var(--quiero)}
+.macro summary{cursor:pointer;padding:12px 14px;display:flex;gap:10px;align-items:center;list-style:none;font-weight:700}
+.macro summary::-webkit-details-marker{display:none}
+.macro summary .desc{font-weight:500;font-size:.8rem;color:var(--muted);display:block}
+.macro .opts{display:grid;gap:2px;padding:0 6px 8px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:.92rem;font-weight:500}
+.opt:hover{background:var(--sunk)}
+.opt input{margin-top:4px;accent-color:var(--accent);flex:none}
+.mk{font-size:.68rem;font-weight:800;letter-spacing:.04em;border-radius:4px;padding:2px 6px;background:var(--quiero);color:#fff;white-space:nowrap}
+
+/* zonas */
+.zones{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:8px}
+.zone{display:flex;gap:10px;align-items:center;border:2px dashed var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;font-size:.9rem;font-weight:500;background:#fff}
+.zone input{accent-color:var(--accent);flex:none}
+.zone:has(input:checked){border-style:solid;border-color:var(--ink)}
+.sw{width:14px;height:14px;border-radius:3px;flex:none;display:inline-block}
+.zchip{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--sunk)}
+.zchip .sw{width:9px;height:9px;border-radius:2px}
+
+/* tarjetas */
+.card{background:var(--surface);border:2px dashed var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:9px;min-width:0}
+.card .hd{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.card .sub{font-weight:800;font-size:1rem;line-height:1.25}
+.card .txt{font-size:.9rem;font-weight:500;overflow-wrap:anywhere}
+.card .who{font-size:.78rem;color:var(--soy);font-weight:700}
+.card .ft{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:auto}
+.card.mine{border-style:solid;border-color:var(--accent);background:#fff}
+.mesatag{font-size:.72rem;font-weight:700;color:var(--muted)}
+
+/* votos */
+.votebar{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);z-index:4;background:var(--accent);color:#fff;border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;justify-content:space-between;margin-top:16px}
+.dots{display:flex;gap:6px}
+.dots i{width:16px;height:16px;border-radius:50%;border:2px solid #fff;display:inline-block}
+.dots i.on{background:#fff}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:40px;height:40px;border-radius:50%;border:2px solid var(--accent);background:#fff;color:var(--accent);font:inherit;font-size:1.3rem;font-weight:800;cursor:pointer;line-height:1}
+.stepper button:disabled{opacity:.3;cursor:not-allowed}
+.stepper .n{font-size:1.2rem;font-weight:800;min-width:1.6em;text-align:center}
+
+/* escala 1-5 */
+.scale{display:grid;grid-template-columns:7.5em repeat(5,1fr);gap:6px;align-items:center}
+.scale span.l{font-size:.84rem;font-weight:700}
+.scale button{font:inherit;font-weight:800;height:40px;border-radius:8px;border:2px dashed var(--line);background:#fff;color:var(--ink);cursor:pointer;font-size:1rem}
+.scale button[aria-pressed="true"]{background:var(--accent);border:2px solid var(--accent);color:#fff}
+
+/* mapa de calor */
+.tbl{overflow-x:auto}
+table.heat{border-collapse:separate;border-spacing:4px;width:100%;min-width:560px}
+table.heat th{font-size:.76rem;font-weight:700;text-align:left;padding:4px 6px;vertical-align:bottom}
+table.heat th.zh{text-align:center}
+table.heat td{text-align:center;font-weight:800;font-size:1rem;padding:10px 4px;border-radius:6px;font-variant-numeric:tabular-nums}
+table.heat td.tot{background:transparent;color:var(--muted);font-size:.85rem}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;font-size:.88rem;font-weight:500}
+.bar .track{grid-column:1/-1;height:10px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.bar .track b{display:block;height:100%;background:var(--accent);border-radius:99px}
+
+/* ranking y desafíos */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{border:2px dashed var(--accent);border-radius:12px;padding:10px 14px;background:var(--surface)}
+.kpi b{font-size:2.1rem;font-weight:800;display:block;line-height:1.1;color:var(--accent);font-variant-numeric:tabular-nums}
+.kpi span{font-size:.8rem;font-weight:600;color:var(--muted)}
+.desafio{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 20px;padding:20px;border-radius:var(--r);background:var(--surface);border:2px dashed var(--line)}
+.desafio .pos{font-size:4.4rem;font-weight:800;line-height:.9;grid-row:span 3}
+.desafio:nth-of-type(1) .pos{color:var(--e11)} .desafio:nth-of-type(2) .pos{color:var(--e12)} .desafio:nth-of-type(3) .pos{color:var(--e21)}
+.desafio .q{font-size:clamp(1.1rem,2.2vw,1.45rem);font-weight:700;line-height:1.3}
+.desafio textarea{font-size:1.05rem;font-weight:600}
+.formula{font-size:.8rem;font-weight:500;background:var(--sunk);border-radius:10px;padding:10px 12px;overflow-x:auto;white-space:pre-wrap}
+.rk{display:grid;grid-template-columns:2.5em minmax(0,1fr) repeat(4,4.4em);gap:8px 10px;align-items:center;padding:12px 0;border-bottom:2px dashed var(--line)}
+.rk:last-child{border-bottom:0}
+.rk.h{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:800;padding-top:4px}
+.rk .pos{font-size:1.8rem;font-weight:800;color:var(--accent)}
+.rk .num{text-align:right}
+.rk .score{font-weight:800;color:var(--accent);font-size:1.1rem}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{font:inherit;font-size:.82rem;font-weight:600;border:2px dashed var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.filters button[aria-pressed="true"]{border:2px solid var(--ink);background:var(--ink);color:#fff}
+.subtabs{display:flex;gap:4px;border-bottom:2px dashed var(--line);overflow-x:auto}
+.subtabs button{font:inherit;font-weight:700;background:none;border:0;border-bottom:4px solid transparent;padding:10px 14px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.subtabs button[aria-pressed="true"]{color:var(--ink);border-color:var(--accent)}
+
+/* inicio */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:14px}
+.step{border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:9px;border:2.5px solid var(--sc);background:var(--st)}
+.step .etapa{color:var(--sc)}
+.step[data-e="11"]{--sc:var(--e11);--st:var(--e11t)} .step[data-e="12"]{--sc:var(--e12);--st:var(--e12t)}
+.step[data-e="21"]{--sc:var(--e21);--st:var(--e21t)} .step[data-e="22"]{--sc:var(--e22);--st:var(--e22t)} .step[data-e="0"]{--sc:var(--chip);--st:var(--sunk)}
+.qr{background:#fff;border-radius:8px;padding:8px;width:140px;max-width:100%;aspect-ratio:1;align-self:flex-start}
+.qr svg{display:block;width:100%;height:100%}
+.phases{display:flex;gap:6px;flex-wrap:wrap}
+.phases button{font:inherit;font-size:.86rem;font-weight:600;border:2px dashed var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:7px 12px;cursor:pointer;text-align:left}
+.phases button .n{font-size:.7rem;font-weight:800;display:block;color:var(--muted)}
+.phases button[aria-pressed="true"]{border:2px solid var(--obj);background:var(--obj);color:#fff}
+.phases button[aria-pressed="true"] .n{color:#fff}
+.hist{display:flex;flex-direction:column;gap:0}
+.hist .it{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-top:2px dashed var(--line);flex-wrap:wrap}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 20px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-weight:700;z-index:20;font-size:.9rem;max-width:calc(100% - 32px)}
+.ex{font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid var(--warn);color:var(--warn);border-radius:4px;padding:0 4px}
+@media (max-width:640px){
+  .rk{grid-template-columns:2em minmax(0,1fr) 4em}
+  .rk .opt-col{display:none}
+  .scale{grid-template-columns:repeat(5,1fr)}
+  .scale span.l{grid-column:1/-1}
+  .desafio{grid-template-columns:1fr}
+  .desafio .pos{grid-row:auto;font-size:2.6rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+
+<header class="top"><div class="wrap">
+  <a class="brand" href="#inicio">El Barrio Decide</a>
+  <nav class="tabs" id="nav"></nav>
+  <div class="pills" id="pills"></div>
+</div></header>
+<main class="wrap" id="app"></main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* =====================================================================
+   CONFIGURACIÓN · completa estos datos antes de publicar
+   1) FIREBASE_CONFIG: pega aquí el objeto firebaseConfig de tu proyecto
+      (Firebase > Configuración del proyecto > Tus apps > App web).
+      Si lo dejas vacío, la plataforma funciona solo en este dispositivo.
+   2) CLAVE_FACILITADOR: clave para iniciar jornadas, cambiar fases y fijar
+      desafíos. Cámbiala por una propia. Es una barrera de uso, no un
+      sistema de seguridad: no la compartas con los vecinos.
+   ===================================================================== */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyA_yJxWcmhO2QKbpyW5sXXEswIOTVZpMa0",
+  authDomain: "el-barrio-decide.firebaseapp.com",
+  projectId: "el-barrio-decide",
+  storageBucket: "el-barrio-decide.firebasestorage.app",
+  messagingSenderId: "890658753600",
+  appId: "1:890658753600:web:cc1dd11291a044b96463a5"
+};
+const CLAVE_FACILITADOR = "providencia2026";
+
+/* ============ CATÁLOGOS ============ */
+const MESAS=4;
+const ZONAS=[
+ {id:'R', n:'Residencial', pl:'Zonas Residenciales', ej:'Pocuro, Lyon sur, Las Lilas'},
+ {id:'C', n:'Mixta Comercial', pl:'Zonas Mixtas Comerciales', ej:'Manuel Montt, Tobalaba, Barrio Italia'},
+ {id:'EC',n:'Equipamiento Intensivo', pl:'Zonas de Equipamiento Intensivo', ej:'Pedro de Valdivia, Escuela Militar, Costanera'},
+ {id:'A', n:'Avenidas', pl:'Avenidas Principales', ej:'Andrés Bello, Providencia, Bilbao'},
+ {id:'PH',n:'Parques / Patrimonial', pl:'Parques y Barrios Patrimoniales', ej:'Parque Bustamante, Balmaceda, Bellavista'}
+];
+const ZCODE={R:'R',C:'C',EC:'E/C',A:'A',PH:'P/H'};
+const MACROS=[
+ {id:'M1',n:'Uso Ocupacional del Espacio Público',c:'Espacio público',d:'Aceras bloqueadas, estacionamiento irregular en veredas o platabandas',subs:[
+  ['m1a','Motos y bicicletas estacionadas en veredas','ordenar el estacionamiento de motos y bicicletas de reparto que hoy ocupa las veredas'],
+  ['m1b','Bloqueo de accesos, rampas y pasos peatonales','liberar los accesos, rampas y pasos peatonales bloqueados por vehículos de reparto'],
+  ['m1c','Ocupación de platabandas y áreas verdes','proteger platabandas y áreas verdes de su uso como estacionamiento y zona de espera'],
+  ['m1d','Aglomeración de repartidores en esquinas y plazas','distribuir la espera de repartidores que hoy se concentra en esquinas y plazas'],
+  ['m1e','Detención en doble fila o sobre ciclovías','evitar la detención de repartos en doble fila y sobre ciclovías']]},
+ {id:'M2',n:'Conducción e Incivilidades Viales',c:'Conducción',d:'Exceso de velocidad, tránsito por aceras o en contra, maniobras imprudentes',subs:[
+  ['m2a','Exceso de velocidad','reducir la velocidad de circulación de los vehículos de reparto'],
+  ['m2b','Circulación por veredas','sacar de las veredas la circulación de motos y bicicletas de reparto'],
+  ['m2c','Tránsito en contra del sentido de la vía','erradicar el tránsito de repartidores en contra del sentido de las vías'],
+  ['m2d','Motos circulando por ciclovías','resguardar las ciclovías del uso por motos de reparto'],
+  ['m2e','Maniobras imprudentes y no respeto al peatón','reducir las maniobras imprudentes y el no respeto a la prioridad peatonal'],
+  ['m2f','Uso del celular mientras conduce','evitar que los repartidores manipulen el celular mientras conducen']]},
+ {id:'M3',n:'Falta de Normativa y Fiscalización',c:'Normativa',d:'Sin empadronamiento, escapes libres y ruido, falta de control en ruta',subs:[
+  ['m3a','Sin registro o empadronamiento comunal','contar con un registro comunal de repartidores y vehículos de reparto'],
+  ['m3b','Escapes libres y ruido de motos','disminuir el ruido de escapes libres de las motos de reparto'],
+  ['m3c','Falta de control en ruta','fortalecer el control en ruta de los vehículos de reparto'],
+  ['m3d','Motos sin patente o documentación','regularizar las motos de reparto que circulan sin patente o documentación'],
+  ['m3e','Plataformas sin responsabilidad en el barrio','involucrar a las plataformas de delivery en la responsabilidad por su operación en el barrio'],
+  ['m3f','Precariedad laboral y falta de seguros','abordar la precariedad laboral y la falta de seguros de los repartidores']]},
+ {id:'M4',n:'Ausencia de Zonas de Espera y Descanso',c:'Zonas de espera',d:'Sin puntos de hidratación, sombra, carga o resguardo para repartidores',subs:[
+  ['m4a','Sin puntos de espera definidos','habilitar puntos de espera definidos para repartidores'],
+  ['m4b','Sin acceso a baños','dar acceso a servicios higiénicos a los repartidores'],
+  ['m4c','Sin hidratación ni sombra','ofrecer hidratación y sombra a los repartidores durante la espera'],
+  ['m4d','Sin carga para celulares o baterías','disponer puntos de carga para celulares y baterías de reparto'],
+  ['m4e','Inseguridad y robos a repartidores','resguardar a los repartidores frente a robos y situaciones de inseguridad']]},
+ {id:'M5',n:'Gestión de Residuos y Operación Comercial',c:'Residuos y comercio',d:'Acumulación de empaques y basura, aglomeración en puertas de locales',subs:[
+  ['m5a','Acumulación de empaques y basura','reducir la acumulación de empaques y basura asociada al delivery'],
+  ['m5b','Aglomeración en puertas de locales','ordenar la espera de repartidores en las puertas de los locales'],
+  ['m5c','Cocinas oscuras (dark kitchens) en barrios residenciales','compatibilizar las cocinas oscuras (dark kitchens) con la vida residencial'],
+  ['m5d','Entregas nocturnas y ruido en edificios','disminuir las molestias de las entregas nocturnas en edificios residenciales'],
+  ['m5e','Saturación de conserjerías y accesos de edificios','descongestionar las conserjerías y accesos de edificios por la recepción de pedidos']]}
+];
+const SUBS={};MACROS.forEach(m=>{m.subs.forEach(([id,n,h])=>SUBS[id]={id,n,h,m:m.id});SUBS[m.id.toLowerCase()+'x']={id:m.id.toLowerCase()+'x',n:'Otro problema de '+m.c.toLowerCase(),h:null,m:m.id,otro:true}});
+const MAC=Object.fromEntries(MACROS.map(m=>[m.id,m]));
+const INGR=[['fis','Físico'],['nor','Normativo'],['com','Comercio / Apps'],['vec','Vecinal / Digital']];
+const FASES=[
+ {id:'registro',n:'Etapa 1.1',t:'Mapeo narrativo'},
+ {id:'votacion',n:'Etapa 1.2',t:'Votación de problemas'},
+ {id:'desafios',n:'Etapa 1.2',t:'Desafíos comunales'},
+ {id:'soluciones',n:'Etapa 2.1',t:'Ingreso de soluciones'},
+ {id:'evaluacion',n:'Etapa 2.2',t:'Evaluación 3D'},
+ {id:'ranking',n:'Etapa 2.2',t:'Ranking comunal'}];
+const VOTOS_MAX=5, TRANSV=0.15;
+const FORMULA='¿Cómo podríamos [Problema N° votado], detectado de forma crítica en [Zonas de Uso de Suelo afectadas], para asegurar la tranquilidad y movilidad sin detener la actividad del barrio?';
+const ARTIFACT_URL=location.protocol.startsWith('http')?location.origin+location.pathname:'';
+
+/* ============ UTILIDADES ============ */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const rid=()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
+const fmt=(n,d=2)=>Number.isFinite(n)?n.toFixed(d).replace('.',','):'–';
+const hoy=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+const fechaTxt=f=>{if(!f)return '';const [y,m,d]=f.split('-');return `${d}/${m}/${y}`};
+function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>el.hidden=true,2800)}
+function zchips(zs){return (zs||[]).map(z=>`<span class="zchip"><i class="sw" style="background:var(--z-${z})"></i>${ZCODE[z]}</span>`).join('')}
+function zonasTexto(zs){const l=ZONAS.filter(z=>zs.includes(z.id)).map(z=>z.pl);if(!l.length)return 'el barrio';return l.length===1?l[0]:l.slice(0,-1).join(', ')+' y '+l[l.length-1]}
+function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}}
+
+/* ============ ESTADO Y ALMACENAMIENTO ============ */
+const COLS=['problemas','votos','soluciones','evaluaciones'];
+const S={modo:'cargando',db:null,uid:null,puedeEscribir:true,esAdmin:false,
+  estado:{tid:'',sesion:null,fase:'registro',transversalidad:true,desafios:[],url:''},
+  data:{problemas:[],votos:[],soluciones:[],evaluaciones:[]},sesiones:[],subs:[]};
+let localDB=null;
+const hayJornada=()=>!!S.estado.tid;
+const esFacil=()=>S.esAdmin;
+
+function subscribeTaller(){
+  S.subs.forEach(u=>{try{u()}catch(e){}});S.subs=[];
+  COLS.forEach(c=>S.data[c]=[]);
+  const tid=S.estado.tid;if(!tid)return;
+  COLS.forEach(col=>{
+    try{S.subs.push(S.db.collection(`talleres/${tid}/${col}`).onSnapshot(
+      snap=>{S.data[col]=snap.docs.map(d=>({id:d.id,...d.data()}));refresh()},
+      e=>console.warn(col,e)))}catch(e){console.warn(e)}
+  });
+}
+function loadLocal(){
+  localDB=LS.get('bd.local2',null)||{estado:{...S.estado},t:{},sesiones:{}};
+  S.estado={...S.estado,...localDB.estado};pullLocal();
+}
+function pullLocal(){
+  const t=localDB.t[S.estado.tid]||{};COLS.forEach(c=>S.data[c]=Object.entries(t[c]||{}).map(([id,v])=>({id,...v})));
+  S.sesiones=Object.entries(localDB.sesiones||{}).map(([id,v])=>({id,...v}));
+}
+function saveLocal(){LS.set('bd.local2',localDB)}
+
+async function put(col,id,data){
+  if(!hayJornada())throw {code:'sin_jornada'};
+  if(S.modo==='compartido'){await S.db.doc(`talleres/${S.estado.tid}/${col}/${id}`).set(data);return}
+  const t=localDB.t[S.estado.tid]||(localDB.t[S.estado.tid]={});(t[col]||(t[col]={}))[id]=data;saveLocal();pullLocal();refresh();
+}
+async function del(col,id){
+  if(S.modo==='compartido'){await S.db.doc(`talleres/${S.estado.tid}/${col}/${id}`).delete();return}
+  const t=localDB.t[S.estado.tid];if(t&&t[col])delete t[col][id];saveLocal();pullLocal();refresh();
+}
+async function putSesion(id,data){
+  if(S.modo==='compartido'){await S.db.doc('control/estado/sesiones/'+id).set(data);return}
+  localDB.sesiones[id]=data;saveLocal();pullLocal();refresh();
+}
+async function setEstado(patch){
+  const nuevo={...S.estado,...patch};
+  if(S.modo==='compartido'){
+    try{await S.db.doc('control/estado').set(nuevo)}catch(e){toast('Solo el equipo facilitador puede cambiar esto');return false}
+    return true
+  }
+  const cambiaT=nuevo.tid!==S.estado.tid;S.estado=nuevo;localDB.estado=nuevo;saveLocal();if(cambiaT)pullLocal();refresh();return true
+}
+async function guardar(fn,okMsg){
+  try{await fn();if(okMsg)toast(okMsg);return true}
+  catch(e){console.warn(e);toast(e&&e.code==='sin_jornada'?'No hay una jornada activa. El equipo facilitador debe iniciarla.':e&&e.code==='quota_exceeded'?'La base de datos del taller está llena':'No se pudo guardar. Revisa tu acceso o conexión');return false}
+}
+
+/* jornadas: cada uso de la metodología guarda sus datos aparte */
+function sesionActual(){return S.sesiones.find(s=>s.id===S.estado.tid)||S.estado.sesion||null}
+async function archivarActual(){
+  if(!hayJornada())return;
+  const s=sesionActual()||{};
+  await putSesion(S.estado.tid,{nombre:s.nombre||'Jornada',fecha:s.fecha||'',lugar:s.lugar||'',creada:s.creada||Date.now(),
+    fase:S.estado.fase,desafios:S.estado.desafios||[],relatos:S.data.problemas.length,soluciones:S.data.soluciones.length,actualizada:Date.now()});
+}
+async function iniciarJornada(nombre,fecha,lugar){
+  try{await archivarActual()}catch(e){}
+  const tid='j'+Date.now().toString(36);
+  const ses={nombre,fecha,lugar,creada:Date.now(),fase:'registro',desafios:[],relatos:0,soluciones:0};
+  try{await putSesion(tid,ses)}catch(e){toast('Solo el equipo facilitador puede iniciar una jornada');return}
+  if(await setEstado({tid,sesion:{nombre,fecha,lugar},fase:'registro',desafios:[]}))toast('Jornada iniciada');
+}
+async function cerrarJornada(){
+  try{await archivarActual()}catch(e){}
+  if(await setEstado({tid:'',sesion:null,fase:'registro',desafios:[]}))toast('Jornada cerrada y guardada');
+}
+async function reabrirJornada(id){
+  const s=S.sesiones.find(x=>x.id===id);if(!s)return;
+  try{await archivarActual()}catch(e){}
+  if(await setEstado({tid:id,sesion:{nombre:s.nombre,fecha:s.fecha,lugar:s.lugar},fase:s.fase||'registro',desafios:s.desafios||[]}))toast('Jornada reabierta');
+}
+
+/* identidad de votante: cuenta claude.ai o dispositivo (modo asistido en tablet de mesa) */
+function voterId(){
+  if(S.uid&&!LS.get('bd.asistido',false))return String(S.uid).replace(/[^A-Za-z0-9_\-.~:@+]/g,'_');
+  let v=LS.get('bd.voter',null);if(!v){v='dev-'+rid();LS.set('bd.voter',v)}return v
+}
+function siguienteVecino(){LS.set('bd.asistido',true);LS.set('bd.voter','dev-'+rid());borradorVoto=null;borradorEval=null;mount();toast('Listo para el siguiente vecino')}
+
+/* ============ CÁLCULOS ============ */
+function calcProblemas(){
+  const P=S.data.problemas, N=P.length;
+  const cnt={};MACROS.forEach(m=>cnt[m.id]=0);P.forEach(p=>cnt[p.macro]=(cnt[p.macro]||0)+1);
+  const peso={};MACROS.forEach(m=>peso[m.id]=N?cnt[m.id]/N*MACROS.length:0);
+  const votos={};S.data.votos.forEach(v=>Object.entries(v.asignacion||{}).forEach(([pid,n])=>votos[pid]=(votos[pid]||0)+(+n||0)));
+  const lista=P.map(p=>{
+    const nz=(p.zonas||[]).length, tf=S.estado.transversalidad?1+TRANSV*Math.max(0,nz-1):1;
+    const v=votos[p.id]||0;
+    return {...p,votos:v,peso:peso[p.macro]||0,tf,puntaje:v*(peso[p.macro]||0)*tf}
+  }).sort((a,b)=>b.puntaje-a.puntaje||b.votos-a.votos||(b.zonas||[]).length-(a.zonas||[]).length);
+  const matriz={};MACROS.forEach(m=>{matriz[m.id]={};ZONAS.forEach(z=>matriz[m.id][z.id]=0)});
+  P.forEach(p=>(p.zonas||[]).forEach(z=>{if(matriz[p.macro])matriz[p.macro][z]++}));
+  return {N,cnt,peso,lista,matriz,votantes:S.data.votos.filter(v=>Object.values(v.asignacion||{}).some(n=>n>0)).length}
+}
+function preguntaPlantilla(p,zonas){
+  const s=SUBS[p.sub];let h=s&&s.h;
+  if(!h){h='abordar '+(p.otro||p.texto||'el problema detectado').replace(/[.\s]+$/,'').replace(/^./,c=>c.toLowerCase())}
+  return `¿Cómo podríamos ${h}, detectado de forma crítica en ${zonasTexto(zonas)}, para asegurar la tranquilidad y movilidad sin detener la actividad del barrio?`
+}
+function calcRanking(){
+  const evs=S.data.evaluaciones, des=S.estado.desafios||[];
+  return S.data.soluciones.map(s=>{
+    const notas=evs.filter(e=>+e.mesa!==+s.mesa).map(e=>(e.notas||{})[s.id]).filter(n=>n&&n.d&&n.f&&n.v);
+    const k=notas.length, avg=f=>k?notas.reduce((a,n)=>a+n[f],0)/k:NaN;
+    const d=avg('d'),f=avg('f'),v=avg('v');
+    const dz=(des.find(x=>x.pid===s.desafio)||{}).zonas||[];
+    const inter=(s.zonas||[]).filter(z=>dz.includes(z)).length;
+    const pert=dz.length?0.75+0.25*inter/dz.length:1;
+    const comp=INGR.filter(([k])=>s.ingredientes&&s.ingredientes[k]&&s.ingredientes[k].nombre).length;
+    return {...s,k,d,f,v,pert,fa:f*pert,comp,puntaje:k?(d+f*pert+v)/3:NaN}
+  }).sort((a,b)=>(Number.isFinite(b.puntaje)?b.puntaje:-1)-(Number.isFinite(a.puntaje)?a.puntaje:-1))
+}
+
+/* ============ QR ============ */
+function baseURL(){return (S.estado.url||ARTIFACT_URL||'').replace(/#.*$/,'')}
+function qrSVG(text){
+  if(typeof qrcode!=='function'||!text)return '';
+  const q=qrcode(0,'M');q.addData(text);q.make();const n=q.getModuleCount(),m=2;let d='';
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+m},${r+m}h1v1h-1z`;
+  return `<svg viewBox="0 0 ${n+2*m} ${n+2*m}" shape-rendering="crispEdges" role="img" aria-label="Código QR"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`
+}
+
+/* ============ RUTAS ============ */
+const RUTAS=[
+ {id:'inicio',t:'Inicio',n:'',e:'0'},
+ {id:'registro',t:'Registro',n:'1.1',e:'11'},
+ {id:'votar',t:'Votar',n:'1.2',e:'12'},
+ {id:'soluciones',t:'Soluciones',n:'2.1',e:'21'},
+ {id:'evaluar',t:'Evaluar',n:'2.2',e:'22'},
+ {id:'pantalla',t:'Pantalla',n:'',e:'0'}];
+function ruta(){const h=location.hash.replace('#','');return RUTAS.some(r=>r.id===h)?h:'inicio'}
+let vistaActual=null;
+function mount(){
+  const r=ruta();vistaActual=r;document.body.dataset.e=RUTAS.find(x=>x.id===r).e;
+  $('#nav').innerHTML=RUTAS.map(x=>`<a href="#${x.id}" data-e="${x.e}" ${x.id===r?'aria-current="page"':''}>${x.n?`<span class="n">${x.n}</span>`:''}${x.t}</a>`).join('');
+  VISTAS[r].mount($('#app'));refresh();window.scrollTo(0,0)
+}
+function refresh(){
+  const f=FASES.find(x=>x.id===S.estado.fase)||FASES[0];const ses=sesionActual();
+  $('#pills').innerHTML=(hayJornada()?`<span class="chip ses">${esc(ses&&ses.nombre||'Jornada')}</span><span class="chip">${f.n} · ${esc(f.t)}</span>`:'<span class="chip off">Sin jornada activa</span>')+
+   (S.modo==='compartido'?'<span class="chip live"><i></i>Digital · en vivo</span>':S.modo==='local'?'<span class="chip local"><i></i>Solo este dispositivo</span>':S.modo==='error'?'<span class="chip off">Sin conexión</span>':'<span class="chip off">Conectando…</span>');
+  if(vistaActual&&VISTAS[vistaActual].refresh)VISTAS[vistaActual].refresh();
+}
+function avisoAcceso(){
+  if(S.modo==='local')return `<div class="notice">Modo local: los datos se guardan solo en este dispositivo. Para compartir entre mesas y celulares, completa FIREBASE_CONFIG en el archivo.</div>`;
+  if(S.modo==='error')return `<div class="notice">No se pudo conectar con la base de datos. Revisa la conexión a internet y la configuración de Firebase.</div>`;
+  return ''
+}
+function sinJornada(){return `<div class="empty"><h3>No hay una jornada activa</h3><p>El equipo facilitador debe iniciar la jornada de hoy desde Inicio. Esta pantalla se actualiza sola cuando empiece.</p></div>`}
+function mesaRadios(name,sel){return `<div class="mesas" role="radiogroup">${Array.from({length:MESAS},(_,i)=>i+1).map(i=>`<label class="mesa"><input type="radio" name="${name}" value="${i}" ${+sel===i?'checked':''}><span><b>${i}</b>Mesa</span></label>`).join('')}</div>`}
+const mesaSel=(el,name)=>{const r=el.querySelector(`input[name=${name}]:checked`);return r?+r.value:null};
+
+/* ============ VISTAS ============ */
+const VISTAS={};
+
+/* ---------- INICIO / CONTROL ---------- */
+VISTAS.inicio={
+ mount(el){
+  el.innerHTML=`<div class="stack" style="gap:30px">
+   <div class="stack" style="gap:10px"><h1>El Barrio Decide</h1>
+    <p class="lead">De vecinos a gestores: tu voz crea la solución que quieres ver en la comuna.</p>
+    <p class="small muted">Sala situacional · 4 mesas · 2 horas y media · presencial análoga y digital</p></div>
+   <div id="aviso"></div>
+   <section class="panel" id="jornada" style="border-color:var(--obj)"></section>
+   <section class="stack"><h2>Accesos por código QR</h2><div class="steps" id="qrs"></div><p class="small muted" id="qrnota"></p></section>
+   <section class="panel plain stack" id="control"></section>
+  </div>`;
+ },
+ refresh(){
+  $('#aviso').innerHTML=avisoAcceso();
+  pintarJornada();
+  const b=baseURL();
+  const items=[['registro','11','Etapa 1.1','Registro de situaciones','Secretario de mesa, en tablet o laptop.'],['votar','12','Etapa 1.2','Votación de problemas','Cada vecino, desde su celular. 5 votos.'],['soluciones','21','Etapa 2.1','Registro de soluciones','Secretario de mesa, tras armar el lienzo.'],['evaluar','22','Etapa 2.2','Evaluación 3D','Cada vecino califica a las otras mesas.'],['pantalla','0','Plenaria','Pantalla central','Proyector: mapa de calor, desafíos y ranking.']];
+  $('#qrs').innerHTML=items.map(([r,e,n,t,d])=>`<div class="step" data-e="${e}"><span class="etapa">${n}</span><h3>${t}</h3><p class="small">${d}</p>${b?`<div class="qr">${qrSVG(b+'#'+r)}</div>`:''}<a class="btn sm" href="#${r}" style="align-self:flex-start">Abrir</a></div>`).join('');
+  $('#qrnota').innerHTML=b?`Los códigos apuntan a ${esc(b)}. Sirven para todas las jornadas: el celular entra a la jornada activa.`:'Publica el archivo en un sitio web para generar los QR.';
+  pintarControl();
+ }
+};
+function pintarJornada(){
+  const j=$('#jornada');const ses=sesionActual();const adm=esFacil();
+  if(hayJornada()){
+   if(j.dataset.m==='on'+S.estado.tid+(ses&&ses.nombre))return;j.dataset.m='on'+S.estado.tid+(ses&&ses.nombre);
+   j.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-start"><div class="stack" style="gap:4px"><span class="etapa" style="color:var(--obj)">Jornada activa</span><h2>${esc(ses&&ses.nombre||'Jornada')}</h2><p class="small muted">${esc(fechaTxt(ses&&ses.fecha))}${ses&&ses.lugar?' · '+esc(ses.lugar):''}</p></div>
+    ${adm?'<button class="btn" id="j-close">Cerrar jornada</button>':''}</div>
+    <div id="j-confirm" hidden class="notice" style="margin-top:12px">Al cerrar, los datos de esta jornada quedan guardados en el historial y los celulares dejan de recibir votos. <span class="row" style="margin-top:8px"><button class="btn sm primary" id="j-yes" style="--accent:var(--e11)">Cerrar jornada</button><button class="btn sm ghost" id="j-no">Cancelar</button></span></div>`;
+   if(adm){$('#j-close').onclick=()=>$('#j-confirm').hidden=false;$('#j-no').onclick=()=>$('#j-confirm').hidden=true;$('#j-yes').onclick=cerrarJornada}
+   return
+  }
+  if(j.dataset.m==='off')return;j.dataset.m='off';
+  if(!adm){j.innerHTML=`<span class="etapa" style="color:var(--obj)">Jornada</span><h2 style="margin-top:4px">No hay una jornada activa</h2><p class="muted" style="margin-top:6px">El equipo facilitador la iniciará al comenzar el taller.</p>`;return}
+  j.innerHTML=`<form class="stack" id="j-form" novalidate><div class="stack" style="gap:4px"><span class="etapa" style="color:var(--obj)">Paso 0</span><h2>Iniciar la jornada de hoy</h2><p class="small muted">Cada jornada guarda sus relatos, votos, soluciones y evaluaciones por separado. Así puedes usar la plataforma en varias instancias sin mezclar datos.</p></div>
+   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))">
+    <label class="f">Nombre de la jornada<input type="text" id="j-nom" maxlength="80" placeholder="Ej. Junta de Vecinos UV 14 · Pocuro"></label>
+    <label class="f">Fecha<input type="date" id="j-fec" value="${hoy()}"></label>
+    <label class="f">Lugar<input type="text" id="j-lug" maxlength="80" value="Sala situacional"></label></div>
+   <p class="small" id="j-err" style="color:var(--e11);font-weight:700" hidden>Escribe un nombre para la jornada.</p>
+   <button class="btn primary" type="submit" style="align-self:flex-start">Iniciar jornada</button></form>`;
+  $('#j-form').onsubmit=e=>{e.preventDefault();const n=$('#j-nom').value.trim();if(!n){$('#j-err').hidden=false;return}iniciarJornada(n,$('#j-fec').value,$('#j-lug').value.trim())};
+}
+function pintarControl(){
+  const c=$('#control');const st=S.estado;
+  if(!esFacil()){
+   if(c.dataset.ok==='login')return;c.dataset.ok='login';
+   c.innerHTML=`<h2>Control del taller</h2><p class="muted small">Solo para el equipo facilitador: iniciar jornadas, cambiar fases y fijar desafíos.</p>
+    <form class="row" id="c-login" novalidate><label class="f" style="flex:1 1 220px">Clave de facilitador<input type="password" id="c-pin" autocomplete="off"></label><button class="btn primary" type="submit" style="align-self:flex-end">Entrar</button></form>
+    <p class="small" id="c-pinerr" style="color:var(--e11);font-weight:700" hidden>La clave no es correcta.</p>`;
+   $('#c-login').onsubmit=e=>{e.preventDefault();if($('#c-pin').value===CLAVE_FACILITADOR){LS.set('bd.fac',true);S.esAdmin=true;delete c.dataset.ok;delete $('#jornada').dataset.m;refresh();toast('Modo facilitador activado')}else $('#c-pinerr').hidden=false};
+   return}
+  const hist=[...S.sesiones].sort((a,b)=>(b.creada||0)-(a.creada||0));
+  const histHTML=hist.length?`<div class="hist">${hist.map(s=>`<div class="it"><div><b>${esc(s.nombre)}</b><div class="small muted">${esc(fechaTxt(s.fecha))}${s.lugar?' · '+esc(s.lugar):''}${s.id===st.tid?' · en curso':` · ${s.relatos||0} relatos, ${s.soluciones||0} soluciones`}</div></div>${s.id===st.tid?'<span class="chip ses">Activa</span>':`<button class="btn sm ghost" data-reabrir="${s.id}">Reabrir</button>`}</div>`).join('')}</div>`:'<p class="small muted">Aún no hay jornadas guardadas.</p>';
+  if(c.dataset.ok){
+   c.querySelectorAll('.phases button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.f===st.fase));
+   c.querySelectorAll('.phases button').forEach(b=>b.disabled=!hayJornada());
+   $('#c-tv').checked=!!st.transversalidad;$('#c-demo').disabled=!hayJornada();
+   $('#c-hist').innerHTML=histHTML;bindHist();return}
+  c.dataset.ok=1;
+  c.innerHTML=`<div class="row" style="justify-content:space-between"><h2>Control del taller</h2><button class="btn sm ghost" id="c-out" type="button">Salir del modo facilitador</button></div>
+   <fieldset><legend>Fase activa <small>· abre o cierra la votación y la evaluación en los celulares</small></legend>
+    <div class="phases">${FASES.map(f=>`<button type="button" data-f="${f.id}" aria-pressed="${f.id===st.fase}" ${hayJornada()?'':'disabled'}><span class="n">${f.n}</span>${f.t}</button>`).join('')}</div></fieldset>
+   <label class="f">Enlace para los QR<small>Se usa la dirección de esta página. Cámbiala solo si usas un enlace corto.</small><input type="url" id="c-url" placeholder="https://…" value="${esc(st.url||ARTIFACT_URL)}"></label>
+   <label class="row" style="gap:10px;font-weight:700"><input type="checkbox" id="c-tv" ${st.transversalidad?'checked':''} style="width:20px;height:20px;accent-color:var(--obj)">Bonificar transversalidad espacial (+${TRANSV*100}% por cada zona adicional)</label>
+   <div class="row"><button class="btn ghost" id="c-demo" ${hayJornada()?'':'disabled'}>Cargar datos de ejemplo en esta jornada</button><span class="small muted" id="c-msg"></span></div>
+   <div class="stack" style="gap:6px"><h3>Historial de jornadas</h3><div id="c-hist">${histHTML}</div></div>`;
+  c.querySelectorAll('.phases button').forEach(b=>b.onclick=()=>setEstado({fase:b.dataset.f}));
+  $('#c-url').onchange=e=>setEstado({url:e.target.value.trim()});
+  $('#c-tv').onchange=e=>setEstado({transversalidad:e.target.checked});
+  $('#c-demo').onclick=cargarEjemplo;
+  $('#c-out').onclick=()=>{LS.set('bd.fac',false);S.esAdmin=false;delete c.dataset.ok;delete $('#jornada').dataset.m;refresh()};
+  bindHist();
+}
+function bindHist(){document.querySelectorAll('[data-reabrir]').forEach(b=>b.onclick=()=>reabrirJornada(b.dataset.reabrir))}
+
+async function cargarEjemplo(){
+  const msg=$('#c-msg');msg.textContent='Cargando ejemplo…';
+  const P=[
+   ['Persona mayor caminando','m1a',['R','C'],'Quiero pasar al supermercado de regreso a casa, pero el viernes a las 20:00 las motos ocupan la vereda de Pocuro.',1],
+   ['Cuidador con coche','m1b',['C'],'Quiero llevar a mi hijo al colegio y la rampa de la esquina de Manuel Montt está bloqueada por motos.',1],
+   ['Residente en edificio','m3b',['R','A'],'Quiero descansar en la noche, pero a las 23:00 pasan motos con escape libre por Bilbao y los pasajes.',2],
+   ['Ciclista en circulación','m2d',['A'],'Quiero regresar a casa desde el trabajo y en Andrés Bello las motos usan la ciclovía.',2],
+   ['Trabajador/a saliendo a almorzar','m4a',['EC','C'],'Quiero almorzar en un local del barrio y en Pedro de Valdivia los repartidores esperan sobre la vereda.',3],
+   ['Persona caminando con un niño/a','m5b',['C'],'Quiero ir a la farmacia y hay diez repartidores en la puerta del local de al lado.',3],
+   ['Persona con baja visión','m2b',['R','PH','C'],'Quiero salir a hacer ejercicio y las bicicletas de reparto pasan rápido por la vereda del Parque Bustamante.',4],
+   ['Residente en edificio','m5e',['R'],'Quiero recibir un pedido en la entrada de mi edificio y entre las 20 y 22 hrs la conserjería colapsa.',4]];
+  try{
+   const ids=[];
+   for(const [perfil,sub,zonas,texto,mesa] of P){const id='ej-'+rid();ids.push(id);await put('problemas',id,{perfil,sub,macro:SUBS[sub].m,zonas,texto,otro:'',mesa,ejemplo:true,ts:Date.now()})}
+   const V=[[0,0,2,4,6],[2,2,4,6,1],[4,4,0,7,2],[3,6,6,0,1]];
+   for(const v of V){const a={};v.forEach(i=>a[ids[i]]=(a[ids[i]]||0)+1);await put('votos','ej-'+rid(),{asignacion:a,ejemplo:true,ts:Date.now()})}
+   msg.textContent='Ejemplo cargado: 8 relatos de 4 mesas y 4 votantes, marcados como ejemplo.';
+  }catch(e){msg.textContent='No se pudo cargar el ejemplo.'}
+}
+
+/* ---------- 1.1 REGISTRO ---------- */
+VISTAS.registro={
+ mount(el){
+  el.innerHTML=`<div class="grid g2" style="align-items:start">
+   <form class="panel stack" id="fr" novalidate>
+    <div class="stack" style="gap:4px"><span class="etapa">Etapa 1.1 · Secretario de mesa</span><h2>Registro de situaciones</h2>
+     <p class="small muted">Un registro por relato. El vecino arma su escenario con las tarjetas Soy…, Quiero…, Justo hoy… y Me encuentro con…, y lo ubica en el mapa de la mesa.</p></div>
+    <div id="aviso"></div>
+    <fieldset><legend>¿En qué mesa estás?</legend>${mesaRadios('r-mesa',LS.get('bd.mesa',null))}</fieldset>
+    <label class="f">Perfil del vecino <small>Tarjeta <b style="color:var(--soy)">Soy…</b> Escribe con sus palabras.</small><input type="text" id="r-perfil" placeholder="Ej. Persona mayor caminando, vivo en Pocuro" maxlength="160"></label>
+    <fieldset><legend>Categoría del fenómeno <small>· tarjeta Me encuentro con…</small></legend>
+     <div class="stack" style="gap:8px">${MACROS.map(m=>`<details class="macro"><summary><span class="mk">${m.id}</span><span>${m.n}<span class="desc">${m.d}</span></span></summary>
+      <div class="opts">${m.subs.map(([id,n])=>`<label class="opt"><input type="radio" name="r-sub" value="${id}">${n}</label>`).join('')}
+       <label class="opt"><input type="radio" name="r-sub" value="${m.id.toLowerCase()}x">Otro problema de ${m.c.toLowerCase()} (especificar)</label></div></details>`).join('')}</div>
+     <input type="text" id="r-otro" placeholder="Nombre breve del problema nuevo" hidden maxlength="90" style="margin-top:8px">
+    </fieldset>
+    <fieldset><legend>Zona de uso de suelo donde ocurre <small>· marca todas las que correspondan</small></legend>
+     <div class="zones">${ZONAS.map(z=>`<label class="zone"><input type="checkbox" name="r-z" value="${z.id}"><i class="sw" style="background:var(--z-${z.id})"></i><span><b>${ZCODE[z.id]}</b> ${z.n}<br><small class="muted">${z.ej}</small></span></label>`).join('')}</div></fieldset>
+    <label class="f">Describe el problema <small>Tarjetas <b style="color:var(--quiero)">Quiero…</b> y Justo hoy…: qué pasó, dónde y cuándo.</small><textarea id="r-texto" maxlength="600" placeholder="Ej. Quiero ir a la farmacia, pero el viernes a las 21:00 las motos ocupan toda la vereda de Manuel Montt."></textarea></label>
+    <p class="small" id="r-err" style="color:var(--e11);font-weight:700" hidden></p>
+    <button class="btn primary big" type="submit">Registrar relato</button>
+   </form>
+   <section class="stack"><div class="row" style="justify-content:space-between"><h2 id="r-h">Relatos de la mesa</h2><span class="small muted" id="r-tot"></span></div><div class="stack" id="r-list"></div></section>
+  </div>`;
+  const otro=$('#r-otro');
+  el.querySelectorAll('input[name=r-sub]').forEach(r=>r.onchange=()=>{otro.hidden=!SUBS[r.value].otro;if(!otro.hidden)otro.focus()});
+  el.querySelectorAll('input[name=r-mesa]').forEach(r=>r.onchange=()=>{LS.set('bd.mesa',+r.value);this.refresh()});
+  $('#fr').onsubmit=async e=>{
+   e.preventDefault();const err=$('#r-err');
+   const mesa=mesaSel(el,'r-mesa'),perfil=$('#r-perfil').value.trim(), sub=(el.querySelector('input[name=r-sub]:checked')||{}).value;
+   const zonas=[...el.querySelectorAll('input[name=r-z]:checked')].map(x=>x.value), texto=$('#r-texto').value.trim(), ot=otro.value.trim();
+   const falta=[];if(!mesa)falta.push('mesa');if(!perfil)falta.push('perfil');if(!sub)falta.push('categoría');if(sub&&SUBS[sub].otro&&!ot)falta.push('nombre del problema nuevo');if(!zonas.length)falta.push('al menos una zona');if(!texto)falta.push('descripción');
+   if(falta.length){err.textContent='Falta completar: '+falta.join(', ')+'.';err.hidden=false;return}
+   err.hidden=true;
+   const ok=await guardar(()=>put('problemas','p-'+rid(),{perfil,sub,macro:SUBS[sub].m,otro:ot,zonas,texto,mesa,ts:Date.now()}),'Relato registrado');
+   if(ok){['r-perfil','r-texto','r-otro'].forEach(i=>$('#'+i).value='');el.querySelectorAll('input[name=r-sub],input[name=r-z]').forEach(x=>x.checked=false);otro.hidden=true;el.querySelectorAll('details.macro').forEach(d=>d.open=false);$('#r-perfil').focus()}
+  };
+ },
+ refresh(){
+  $('#aviso').innerHTML=hayJornada()?avisoAcceso():sinJornada();
+  const mesa=mesaSel(document,'r-mesa');
+  const L=S.data.problemas.filter(p=>+p.mesa===mesa).sort((a,b)=>b.ts-a.ts);
+  $('#r-h').textContent=mesa?'Relatos de la mesa '+mesa:'Relatos de la mesa';
+  $('#r-tot').textContent=`${S.data.problemas.length} en total · ${MESAS} mesas`;
+  $('#r-list').innerHTML=!mesa?'<div class="empty">Elige tu mesa para ver aquí sus relatos.</div>':L.length?L.map(p=>cardProblema(p,{borrar:true})).join(''):'<div class="empty">Aún no hay relatos de esta mesa. El primero aparecerá aquí apenas lo registres.</div>';
+  $('#r-list').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>guardar(()=>del('problemas',b.dataset.del),'Relato eliminado'));
+ }
+};
+function nombreSub(p){return SUBS[p.sub]&&SUBS[p.sub].otro?(p.otro||'Otro'):(SUBS[p.sub]||{}).n||'Sin categoría'}
+function cardProblema(p,o={}){
+  const m=MAC[p.macro]||{};
+  return `<article class="card ${o.mine?'mine':''}"><div class="hd"><span class="mk" title="${esc(m.n)}">${esc(p.macro)} · ${esc(m.c||'')}</span>${p.ejemplo?'<span class="ex">Ejemplo</span>':''}<span class="mesatag">Mesa ${esc(p.mesa)}</span></div>
+   <div class="sub">${esc(nombreSub(p))}</div><p class="txt">${esc(p.texto)}</p><p class="who">Soy… ${esc(p.perfil)}</p>
+   <div class="ft">${zchips(p.zonas)}${o.extra||''}${o.borrar?`<button class="btn sm ghost" style="margin-left:auto" data-del="${p.id}">Eliminar</button>`:''}</div></article>`
+}
+
+/* ---------- 1.2 VOTAR ---------- */
+let borradorVoto=null;
+const guardarVoto=debounce(async()=>{if(!borradorVoto)return;await guardar(()=>put('votos',voterId(),{asignacion:borradorVoto,ts:Date.now()}))},700);
+VISTAS.votar={
+ mount(el){
+  el.innerHTML=`<div class="narrow stack"><div class="stack" style="gap:6px"><span class="etapa">Etapa 1.2 · Votación individual</span><h1>Elige los problemas más urgentes</h1>
+   <p class="muted" style="font-weight:500">Están las tarjetas de las ${MESAS} mesas juntas. Tienes <b>${VOTOS_MAX} votos</b>: puedes darlos a distintas tarjetas o varios a una misma. Se guardan solos.</p></div>
+   <div id="aviso"></div><div id="v-body" class="stack"></div></div>`;
+ },
+ refresh(){
+  const body=$('#v-body');
+  if(!hayJornada()){$('#aviso').innerHTML='';body.innerHTML=sinJornada();borradorVoto=null;return}
+  $('#aviso').innerHTML=avisoAcceso();
+  if(S.estado.fase!=='votacion'){
+   body.innerHTML=`<div class="empty"><h3>La votación no está abierta</h3><p>El equipo facilitador la abrirá al terminar el registro de relatos. Esta pantalla se actualiza sola.</p></div>${botonSiguiente()}`;bindSig();return}
+  const id=voterId();
+  if(!borradorVoto){const mio=S.data.votos.find(v=>v.id===id);borradorVoto={...((mio&&mio.asignacion)||{})}}
+  const usados=Object.values(borradorVoto).reduce((a,b)=>a+b,0), libres=VOTOS_MAX-usados;
+  const C=calcProblemas();
+  const P=[...S.data.problemas].sort((a,b)=>a.macro.localeCompare(b.macro)||a.sub.localeCompare(b.sub));
+  if(!P.length){body.innerHTML='<div class="empty">Todavía no hay tarjetas de problemas registradas.</div>';return}
+  let html='';let mAnt='';
+  P.forEach(p=>{
+   if(p.macro!==mAnt){mAnt=p.macro;const m=MAC[p.macro];html+=`<div class="row" style="margin-top:8px;justify-content:space-between"><h3><span class="mk">${m.id}</span> ${m.n}</h3><span class="small muted num" title="Peso del área">peso ×${fmt(C.peso[m.id])}</span></div>`}
+   const n=borradorVoto[p.id]||0;
+   html+=cardProblema(p,{mine:n>0,extra:`<div class="stepper" style="margin-left:auto"><button type="button" data-m="${p.id}" ${n?'':'disabled'} aria-label="Quitar voto">−</button><span class="n">${n}</span><button type="button" data-p="${p.id}" ${libres?'':'disabled'} aria-label="Dar voto">+</button></div>`});
+  });
+  html+=`<div class="votebar"><div><b>${libres?`Te quedan ${libres} voto${libres>1?'s':''}`:'Votos completos'}</b><div class="small" style="opacity:.85">Votando como ${id.startsWith('dev-')?'vecino '+id.slice(4,8):'tu cuenta'}</div></div><div class="dots">${Array.from({length:VOTOS_MAX},(_,i)=>`<i class="${i<usados?'on':''}"></i>`).join('')}</div></div>${botonSiguiente()}`;
+  body.innerHTML=html;
+  body.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{if(usados<VOTOS_MAX){borradorVoto[b.dataset.p]=(borradorVoto[b.dataset.p]||0)+1;guardarVoto();this.refresh()}});
+  body.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const k=b.dataset.m;borradorVoto[k]=Math.max(0,(borradorVoto[k]||0)-1);if(!borradorVoto[k])delete borradorVoto[k];guardarVoto();this.refresh()});
+  bindSig();
+ }
+};
+function botonSiguiente(){return `<details class="small muted" style="margin-top:12px"><summary style="cursor:pointer;font-weight:600">¿Votan varios vecinos en esta tablet?</summary><p style="margin:8px 0">Cuando un vecino termine, toca el botón para que el siguiente vote por su cuenta.</p><button class="btn sm" id="sig">Siguiente vecino</button></details>`}
+function bindSig(){const b=$('#sig');if(b)b.onclick=siguienteVecino}
+
+/* ---------- PANTALLA CENTRAL ---------- */
+let tabPantalla=null, filtroZona=null;
+const TABS=[['diag','Diagnóstico','12'],['desafios','Desafíos','12'],['sols','Soluciones','21'],['rank','Ranking','22']];
+function tabPorFase(){return {registro:'diag',votacion:'diag',desafios:'desafios',soluciones:'sols',evaluacion:'sols',ranking:'rank'}[S.estado.fase]||'diag'}
+VISTAS.pantalla={
+ mount(el){el.innerHTML=`<div class="stack"><div class="subtabs" id="ptabs"></div><div id="aviso"></div><div id="pbody" class="stack" style="gap:24px"></div></div>`},
+ refresh(){
+  const body=$('#pbody');
+  if(!hayJornada()){$('#ptabs').innerHTML='';$('#aviso').innerHTML='';document.body.dataset.e='0';body.innerHTML=sinJornada();return}
+  $('#aviso').innerHTML=S.modo==='local'?avisoAcceso():'';
+  const t=tabPantalla||tabPorFase();document.body.dataset.e=TABS.find(x=>x[0]===t)[2];
+  $('#ptabs').innerHTML=TABS.map(([k,n])=>`<button data-t="${k}" aria-pressed="${k===t}">${n}</button>`).join('')+`<span style="flex:1"></span>${tabPantalla?'<button data-t="auto">Seguir la fase</button>':''}`;
+  $('#ptabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{tabPantalla=b.dataset.t==='auto'?null:b.dataset.t;this.refresh()});
+  if(t==='diag')pDiag(body);else if(t==='desafios')pDesafios(body);else if(t==='sols')pSols(body);else pRank(body);
+ }
+};
+function pDiag(body){
+  const C=calcProblemas();const maxCell=Math.max(1,...MACROS.flatMap(m=>ZONAS.map(z=>C.matriz[m.id][z.id])));
+  const ztot={};ZONAS.forEach(z=>ztot[z.id]=MACROS.reduce((a,m)=>a+C.matriz[m.id][z.id],0));
+  const mesas=new Set(S.data.problemas.map(p=>p.mesa)).size;
+  const maxP=Math.max(...Object.values(C.peso),0.0001);
+  body.innerHTML=`<div><span class="etapa">Etapas 1.1 y 1.2</span><h1>Diagnóstico comunal del delivery</h1></div>
+   <div class="kpis"><div class="kpi"><b>${C.N}</b><span>relatos registrados</span></div><div class="kpi"><b>${mesas}/${MESAS}</b><span>mesas con registros</span></div><div class="kpi"><b>${C.votantes}</b><span>vecinos que votaron</span></div><div class="kpi"><b>${S.data.votos.reduce((a,v)=>a+Object.values(v.asignacion||{}).reduce((x,y)=>x+y,0),0)}</b><span>votos emitidos</span></div></div>
+   <div class="grid heatgrid" style="align-items:start">
+    <section class="panel stack" style="min-width:0"><h2>Mapa de calor: problema × uso de suelo</h2>
+     <div class="tbl"><table class="heat"><thead><tr><th></th>${ZONAS.map(z=>`<th class="zh"><i class="sw" style="background:var(--z-${z.id})"></i><br>${ZCODE[z.id]}<br><span class="muted" style="font-weight:500">${z.n}</span></th>`).join('')}<th class="zh">Total</th></tr></thead>
+     <tbody>${MACROS.map(m=>`<tr><th><span class="mk">${m.id}</span> ${m.c}</th>${ZONAS.map(z=>{const v=C.matriz[m.id][z.id],p=Math.round(v/maxCell*90);return `<td style="background:color-mix(in srgb,var(--e11) ${p}%,var(--sunk));${p>50?'color:#fff':''}">${v||'·'}</td>`}).join('')}<td class="tot">${C.cnt[m.id]}</td></tr>`).join('')}
+     <tr><th class="muted">Menciones</th>${ZONAS.map(z=>`<td class="tot">${ztot[z.id]}</td>`).join('')}<td></td></tr></tbody></table></div>
+     <p class="small muted">Cada relato suma una mención por cada zona marcada. Se suman las ${MESAS} mesas.</p></section>
+    <section class="panel stack"><h2>Peso de cada área de problema</h2>
+     <div class="bars">${MACROS.map(m=>`<div class="bar"><span><span class="mk">${m.id}</span> ${m.c} <span class="muted">· ${C.cnt[m.id]} relatos</span></span><b class="num">×${fmt(C.peso[m.id])}</b><div class="track"><b style="width:${Math.min(100,C.peso[m.id]/maxP*100)}%"></b></div></div>`).join('')}</div>
+     <div class="formula">peso del área = (relatos del área ÷ relatos totales) × 5
+puntaje tarjeta = votos × peso del área${S.estado.transversalidad?` × (1 + ${TRANSV} × zonas adicionales)`:''}</div></section>
+   </div>
+   <section class="stack"><div class="row" style="justify-content:space-between"><h2>Tarjetas ponderadas</h2>${esFacil()?'<button class="btn primary" id="fijar">Fijar los 3 desafíos</button>':''}</div>
+    ${C.lista.length?`<div class="grid g3">${C.lista.map((p,i)=>cardProblema(p,{mine:i<3&&p.puntaje>0,extra:`<span class="small num" style="margin-left:auto">${p.votos} votos · <b>${fmt(p.puntaje)}</b> pts</span>`})).join('')}</div>`:'<div class="empty">Las tarjetas aparecerán aquí a medida que las mesas registren relatos.</div>'}</section>`;
+  const f=$('#fijar');if(f)f.onclick=fijarDesafios;
+}
+async function fijarDesafios(){
+  const C=calcProblemas();const top=C.lista.filter(p=>p.puntaje>0).slice(0,3);
+  if(!top.length){toast('Aún no hay votos para definir desafíos');return}
+  const desafios=top.map(p=>{
+   const zs=new Set(p.zonas||[]);S.data.problemas.filter(q=>q.sub===p.sub&&!SUBS[p.sub].otro).forEach(q=>(q.zonas||[]).forEach(z=>zs.add(z)));
+   const zonas=ZONAS.map(z=>z.id).filter(z=>zs.has(z));
+   return {pid:p.id,macro:p.macro,sub:p.sub,nombre:nombreSub(p),texto:p.texto,perfil:p.perfil,zonas,votos:p.votos,puntaje:p.puntaje,pregunta:preguntaPlantilla(p,zonas),fuente:'plantilla'}
+  });
+  if(await setEstado({desafios,fase:'desafios'})){tabPantalla=null;toast('Desafíos fijados')}
+}
+function pDesafios(body){
+  const D=S.estado.desafios||[];const admin=esFacil();
+  body.innerHTML=`<div><span class="etapa">Cierre de etapa 1.2 · Desafíos comunales</span><h1>Tres problemáticas para co-diseñar</h1></div>
+   <div class="formula">${esc(FORMULA)}</div>
+   ${D.length?D.map((d,i)=>`<article class="desafio"><span class="pos">${i+1}</span>
+     <div class="row" style="gap:8px"><span class="mk">${d.macro} · ${esc((MAC[d.macro]||{}).c)}</span><span class="small muted">${esc(d.nombre)} · ${d.votos} votos · ${fmt(d.puntaje)} pts</span></div>
+     ${admin?`<textarea id="q-${i}" rows="3" aria-label="Pregunta de desafío ${i+1}">${esc(d.pregunta)}</textarea>`:`<p class="q">${esc(d.pregunta)}</p>`}
+     <div class="row" style="gap:8px">${zchips(d.zonas)}${admin?`<span style="flex:1"></span><button class="btn sm ghost" data-tpl="${i}">Volver a la plantilla</button>`:''}<span class="small muted" id="qs-${i}">${d.fuente==='editada'?'Editada por el equipo':'Plantilla automática · puedes editarla'}</span></div>
+    </article>`).join(''):`<div class="empty">Los desafíos se fijan desde la pestaña Diagnóstico una vez cerrada la votación.</div>`}`;
+  if(!admin)return;
+  D.forEach((d,i)=>{
+   const ta=$('#q-'+i);ta.onchange=()=>actualizarDesafio(i,{pregunta:ta.value.trim(),fuente:'editada'});
+   body.querySelector(`[data-tpl="${i}"]`).onclick=()=>{const p=S.data.problemas.find(x=>x.id===d.pid)||d;actualizarDesafio(i,{pregunta:preguntaPlantilla(p,d.zonas),fuente:'plantilla'})};
+  });
+}
+async function actualizarDesafio(i,patch){const D=(S.estado.desafios||[]).map((d,j)=>j===i?{...d,...patch}:d);await setEstado({desafios:D})}
+function cardSolucion(s,o={}){
+  const D=S.estado.desafios||[];const di=D.findIndex(d=>d.pid===s.desafio);
+  return `<article class="card"><div class="hd"><span class="mesatag">Mesa ${esc(s.mesa)}</span>${di>=0?`<span class="mk" style="background:var(--e21)">Desafío ${di+1}</span>`:''}</div>
+   <div class="sub">${esc(s.titulo)}</div><p class="txt">${esc(s.descripcion)}</p>
+   <div class="stack" style="gap:5px">${INGR.map(([k,n])=>{const g=(s.ingredientes||{})[k]||{};return g.nombre?`<div class="small"><b>${n}:</b> ${esc(g.nombre)}${g.aplicacion?` <span class="muted">→ ${esc(g.aplicacion)}</span>`:''}</div>`:`<div class="small muted"><b>${n}:</b> sin ingrediente</div>`}).join('')}</div>
+   <div class="ft">${zchips(s.zonas)}${s.tokens!=null&&s.tokens!==''?`<span class="small muted num">${esc(s.tokens)} tokens</span>`:''}${o.borrar?`<button class="btn sm ghost" style="margin-left:auto" data-del="${s.id}">Eliminar</button>`:''}</div>${o.after||''}</article>`
+}
+function pSols(body){
+  const D=S.estado.desafios||[];const L=S.data.soluciones;
+  body.innerHTML=`<div><span class="etapa">Etapa 2.1 · Mercado de soluciones</span><h1>Soluciones de las mesas</h1></div>
+   ${L.length?(D.length?D:[{pid:null,pregunta:'Soluciones'}]).map((d,i)=>{const ls=L.filter(s=>d.pid==null||s.desafio===d.pid);return ls.length?`<section class="stack"><h3>${d.pid?`Desafío ${i+1}: `:''}<span class="muted" style="font-weight:600">${esc(d.pregunta)}</span></h3><div class="grid g3">${ls.map(s=>cardSolucion(s)).join('')}</div></section>`:''}).join(''):'<div class="empty">Las soluciones aparecerán aquí cuando los secretarios de mesa las ingresen.</div>'}`;
+}
+function pRank(body){
+  const R=calcRanking().filter(s=>!filtroZona||(s.zonas||[]).includes(filtroZona));const evals=S.data.evaluaciones.filter(e=>Object.keys(e.notas||{}).length).length;
+  body.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-end"><div><span class="etapa">Etapa 2.2 · Evaluación multicriterio 3D</span><h1>Ranking oficial de soluciones</h1></div><span class="small muted">${evals} vecinos evaluaron</span></div>
+   <div class="filters"><button data-z="" aria-pressed="${!filtroZona}">Todas las zonas</button>${ZONAS.map(z=>`<button data-z="${z.id}" aria-pressed="${filtroZona===z.id}"><i class="sw" style="background:var(--z-${z.id})"></i>${ZCODE[z.id]} ${z.n}</button>`).join('')}</div>
+   <section class="panel" style="padding-block:8px">
+    <div class="rk h"><span>#</span><span>Proyecto</span><span class="num opt-col">Deseab.</span><span class="num opt-col">Factib.*</span><span class="num opt-col">Viabil.</span><span class="num">Puntaje</span></div>
+    ${R.length?R.map((s,i)=>`<div class="rk"><span class="pos">${Number.isFinite(s.puntaje)?i+1:'–'}</span><div style="min-width:0"><b>${esc(s.titulo)}</b><div class="small muted">Mesa ${esc(s.mesa)} · ${s.k} evaluaciones · ${s.comp}/4 ingredientes</div><div class="row" style="gap:4px;margin-top:4px">${zchips(s.zonas)}</div></div><span class="num opt-col">${fmt(s.d,1)}</span><span class="num opt-col" title="Factibilidad ${fmt(s.f,1)} × pertinencia territorial ${fmt(s.pert)}">${fmt(s.fa,1)}</span><span class="num opt-col">${fmt(s.v,1)}</span><span class="num score">${fmt(s.puntaje)}</span></div>`).join(''):'<div class="empty" style="margin:12px 0">No hay soluciones para esta zona todavía.</div>'}
+   </section>
+   <div class="formula">puntaje = (Deseabilidad + Factibilidad × pertinencia territorial + Viabilidad) ÷ 3
+pertinencia territorial = 0,75 + 0,25 × (zonas de la solución que coinciden con las del desafío ÷ zonas del desafío)
+* Factibilidad ajustada por pertinencia al uso de suelo del PRC. Escala de 1 a 5. No cuentan las notas a la propia mesa.</div>`;
+  body.querySelectorAll('.filters button').forEach(b=>b.onclick=()=>{filtroZona=b.dataset.z||null;pRank(body)});
+}
+
+/* ---------- 2.1 SOLUCIONES ---------- */
+VISTAS.soluciones={
+ mount(el){
+  el.innerHTML=`<div class="grid g2" style="align-items:start">
+   <form class="panel stack" id="fs" novalidate>
+    <div class="stack" style="gap:4px"><span class="etapa">Etapa 2.1 · Secretario de mesa</span><h2>Registro de soluciones</h2>
+     <p class="small muted">Transcribe el lienzo: el desafío elegido, los ingredientes comprados con los 100 tokens y cómo se aplica en cada zona.</p></div>
+    <div id="aviso"></div>
+    <fieldset><legend>¿En qué mesa estás?</legend>${mesaRadios('s-mesa',LS.get('bd.mesa',null))}</fieldset>
+    <fieldset><legend>Desafío que aborda</legend><div class="stack" id="s-des" style="gap:8px"></div></fieldset>
+    <label class="f">Nombre del proyecto<input type="text" id="s-tit" maxlength="90" placeholder="Ej. Pit-Stop Manuel Montt"></label>
+    <label class="f">Articulación de la solución<small>Cómo se conectan los ingredientes en un único proyecto.</small><textarea id="s-desc" maxlength="900"></textarea></label>
+    <fieldset><legend>Ingredientes comprados <small>· al menos uno de cada categoría</small></legend>
+     <div class="stack" style="gap:12px">${INGR.map(([k,n])=>`<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:8px"><label class="f">${n}<input type="text" id="s-${k}-n" maxlength="80" placeholder="Ingrediente"></label><label class="f"><span class="muted" style="font-weight:500">Aplicación según zona</span><input type="text" id="s-${k}-a" maxlength="140" placeholder="Ej. En zona C, bahía en calzada"></label></div>`).join('')}</div></fieldset>
+    <fieldset><legend>Zonas de uso de suelo donde se aplica</legend>
+     <div class="zones">${ZONAS.map(z=>`<label class="zone"><input type="checkbox" name="s-z" value="${z.id}"><i class="sw" style="background:var(--z-${z.id})"></i><span><b>${ZCODE[z.id]}</b> ${z.n}</span></label>`).join('')}</div></fieldset>
+    <label class="f">Tokens utilizados<small>De los 100 tokens de la mesa.</small><input type="number" id="s-tok" min="0" max="100" inputmode="numeric"></label>
+    <p class="small" id="s-err" style="color:var(--e11);font-weight:700" hidden></p>
+    <button class="btn primary big" type="submit">Crear tarjeta de solución</button>
+   </form>
+   <section class="stack"><h2 id="s-h">Soluciones de la mesa</h2><div class="stack" id="s-list"></div></section></div>`;
+  el.querySelectorAll('input[name=s-mesa]').forEach(r=>r.onchange=()=>{LS.set('bd.mesa',+r.value);this.refresh()});
+  $('#fs').onsubmit=async e=>{
+   e.preventDefault();const err=$('#s-err');
+   const mesa=mesaSel(el,'s-mesa');
+   const desafio=(el.querySelector('input[name=s-d]:checked')||{}).value||'';const titulo=$('#s-tit').value.trim(),descripcion=$('#s-desc').value.trim();
+   const zonas=[...el.querySelectorAll('input[name=s-z]:checked')].map(x=>x.value);
+   const ingredientes={};INGR.forEach(([k])=>ingredientes[k]={nombre:$(`#s-${k}-n`).value.trim(),aplicacion:$(`#s-${k}-a`).value.trim()});
+   const falta=[];if(!mesa)falta.push('mesa');if((S.estado.desafios||[]).length&&!desafio)falta.push('desafío');if(!titulo)falta.push('nombre');if(!descripcion)falta.push('articulación');if(!zonas.length)falta.push('al menos una zona');
+   if(falta.length){err.textContent='Falta completar: '+falta.join(', ')+'.';err.hidden=false;return}
+   const faltanI=INGR.filter(([k])=>!ingredientes[k].nombre).map(([,n])=>n);
+   err.hidden=true;
+   const ok=await guardar(()=>put('soluciones','s-'+rid(),{mesa,desafio,titulo,descripcion,ingredientes,zonas,tokens:$('#s-tok').value,ts:Date.now()}),faltanI.length?'Tarjeta creada. Falta ingrediente: '+faltanI.join(', '):'Tarjeta de solución creada');
+   if(ok){['s-tit','s-desc','s-tok',...INGR.flatMap(([k])=>[`s-${k}-n`,`s-${k}-a`])].forEach(i=>$('#'+i).value='');el.querySelectorAll('input[name=s-z],input[name=s-d]').forEach(x=>x.checked=false)}
+  };
+ },
+ refresh(){
+  $('#aviso').innerHTML=hayJornada()?avisoAcceso():sinJornada();
+  const D=S.estado.desafios||[];const wrap=$('#s-des');const sel=(wrap.querySelector('input:checked')||{}).value;
+  const sig=D.map(d=>d.pid+d.pregunta).join('|');
+  if(wrap.dataset.sig!==sig){wrap.dataset.sig=sig;
+   wrap.innerHTML=D.length?D.map((d,i)=>`<label class="opt" style="border:2px dashed var(--line);background:#fff"><input type="radio" name="s-d" value="${d.pid}" ${sel===d.pid?'checked':''} data-i="${i}"><span><b>Desafío ${i+1}</b> · <span class="small">${esc(d.pregunta)}</span></span></label>`).join(''):'<p class="small muted">Aún no hay desafíos fijados. Puedes ingresar la solución igual.</p>';
+   wrap.querySelectorAll('input').forEach(r=>r.onchange=()=>{const d=D[+r.dataset.i];document.querySelectorAll('input[name=s-z]').forEach(c=>c.checked=d.zonas.includes(c.value))});
+  }
+  const mesa=mesaSel(document,'s-mesa');const L=S.data.soluciones.filter(s=>+s.mesa===mesa);
+  $('#s-h').textContent=mesa?'Soluciones de la mesa '+mesa:'Soluciones de la mesa';
+  $('#s-list').innerHTML=!mesa?'<div class="empty">Elige tu mesa para ver aquí su tarjeta.</div>':L.length?L.map(s=>cardSolucion(s,{borrar:true})).join(''):'<div class="empty">La tarjeta de solución de esta mesa aparecerá aquí al crearla.</div>';
+  $('#s-list').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>guardar(()=>del('soluciones',b.dataset.del),'Solución eliminada'));
+ }
+};
+
+/* ---------- 2.2 EVALUAR ---------- */
+let borradorEval=null;
+const guardarEval=debounce(async()=>{if(!borradorEval)return;await guardar(()=>put('evaluaciones',voterId(),{...borradorEval,ts:Date.now()}))},700);
+VISTAS.evaluar={
+ mount(el){
+  el.innerHTML=`<div class="narrow stack"><div class="stack" style="gap:6px"><span class="etapa">Etapa 2.2 · Evaluación multicriterio 3D</span><h1>Evalúa los proyectos de las otras mesas</h1>
+   <p class="muted" style="font-weight:500">Califica de 1 a 5 cada dimensión. Se guarda sola.</p></div><div id="aviso"></div>
+   <details class="panel small"><summary style="cursor:pointer;font-weight:700">Qué significa cada dimensión</summary><div class="stack" style="gap:6px;margin-top:10px"><p><b>Deseabilidad:</b> ¿resuelve con precisión el conflicto en las zonas de uso de suelo señaladas?</p><p><b>Factibilidad:</b> ¿es realizable por el municipio respetando el Plan Regulador Comunal?</p><p><b>Viabilidad:</b> ¿es sostenible con la colaboración entre vecinos, locales comerciales y municipalidad?</p></div></details>
+   <div id="e-body" class="stack"></div></div>`;
+ },
+ refresh(){
+  const body=$('#e-body');
+  if(!hayJornada()){$('#aviso').innerHTML='';body.innerHTML=sinJornada();borradorEval=null;return}
+  $('#aviso').innerHTML=avisoAcceso();
+  if(S.estado.fase!=='evaluacion'){body.innerHTML=`<div class="empty"><h3>La evaluación no está abierta</h3><p>Se abrirá después de que los voceros presenten sus proyectos. Esta pantalla se actualiza sola.</p></div>${botonSiguiente()}`;bindSig();return}
+  const id=voterId();
+  if(!borradorEval){const mio=S.data.evaluaciones.find(e=>e.id===id);borradorEval=mio?{mesa:mio.mesa,notas:JSON.parse(JSON.stringify(mio.notas||{}))}:{mesa:null,notas:{}}}
+  const otras=S.data.soluciones.filter(s=>borradorEval.mesa==null||+s.mesa!==+borradorEval.mesa);
+  const hechas=otras.filter(s=>{const n=borradorEval.notas[s.id];return n&&n.d&&n.f&&n.v}).length;
+  let html=`<fieldset><legend>¿En qué mesa trabajaste? <small>· no evaluarás el proyecto de tu propia mesa</small></legend>${mesaRadios('e-mesa',borradorEval.mesa)}</fieldset>`;
+  if(borradorEval.mesa!=null){
+   html+=`<p class="small" style="font-weight:700">${hechas} de ${otras.length} proyectos evaluados</p>`;
+   html+=otras.length?otras.map(s=>{const n=borradorEval.notas[s.id]||{};return cardSolucion(s,{after:`<div class="stack" style="gap:8px;border-top:2px dashed var(--line);padding-top:12px">${[['d','Deseabilidad'],['f','Factibilidad'],['v','Viabilidad']].map(([k,t])=>`<div class="scale" role="group" aria-label="${t}"><span class="l">${t}</span>${[1,2,3,4,5].map(x=>`<button type="button" data-s="${s.id}" data-k="${k}" data-x="${x}" aria-pressed="${n[k]===x}">${x}</button>`).join('')}</div>`).join('')}</div>`})}).join(''):'<div class="empty">Aún no hay proyectos de otras mesas.</div>';
+  }
+  html+=botonSiguiente();
+  body.innerHTML=html;
+  body.querySelectorAll('input[name=e-mesa]').forEach(r=>r.onchange=()=>{borradorEval.mesa=+r.value;guardarEval();VISTAS.evaluar.refresh()});
+  body.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{const n=borradorEval.notas[b.dataset.s]||(borradorEval.notas[b.dataset.s]={});n[b.dataset.k]=+b.dataset.x;guardarEval();VISTAS.evaluar.refresh()});
+  bindSig();
+ }
+};
+
+/* ============ ARRANQUE ============ */
+window.addEventListener('hashchange',mount);
+mount();
+(function init(){
+  S.esAdmin=!!LS.get('bd.fac',false);
+  const cfg=FIREBASE_CONFIG&&FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.projectId;
+  if(!cfg||!window.firebase){S.modo='local';loadLocal();refresh();
+    if(cfg&&!window.firebase){S.modo='error';refresh()}
+    return}
+  let db;
+  try{firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore()}catch(e){console.warn(e);S.modo='error';refresh();return}
+  S.db=db;S.modo='compartido';let ok=false;
+  const tm=setTimeout(()=>{if(!ok)toast('Sin respuesta del servidor todavía; revisa la conexión')},10000);
+  db.doc('control/estado').onSnapshot(snap=>{
+   if(!snap.metadata.fromCache){ok=true;clearTimeout(tm)}
+   const prev=S.estado.tid;S.estado=snap.exists?{...S.estado,...snap.data()}:{...S.estado,tid:''};
+   if(prev!==S.estado.tid||S.subs.length===0)subscribeTaller();
+   if(prev!==S.estado.tid){borradorVoto=null;borradorEval=null}
+   refresh();
+  },e=>{console.warn(e);S.modo='error';refresh()});
+  db.collection('control/estado/sesiones').onSnapshot(snap=>{S.sesiones=snap.docs.map(d=>({id:d.id,...d.data()}));refresh()},e=>console.warn(e));
+  refresh();
+})();
+</script>
+
+</body>
+</html>
