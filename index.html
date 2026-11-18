@@ -825,6 +825,7 @@ const FASES=[
  {id:'mercado',n:'2.1',t:'Mercado de soluciones',c:'Mercado',min:30,e:'21'},
  {id:'evaluacion',n:'2.2',t:'Plenaria y evaluación 3D',c:'Evaluación',min:25,e:'22'},
  {id:'cierre',n:'3',t:'Cierre y próximos pasos',c:'Cierre',min:15,e:'3'}];
+const VERSION='Versión 6.3';
 const MENSAJE_CIERRE='Gracias por su participación. Toda la información de esta jornada se traspasará a la Municipalidad de Providencia, que evaluará cómo incorporarla.';
 const GUIA={
  inicio:{obj:'Dar la bienvenida, generar confianza en la mesa y explicar el objetivo del taller: que los vecinos logren soluciones aplicables.',mat:['Mapa de mesa','Manual de objetivos y utensilios','Tablet con el link de la mesa'],pasos:['Presenta el taller y su recorrido de 2 horas.','Explica el mapa: amarillo residencial, magenta comercial, azul vía principal y verde área verde o patrimonial.','Cuenta que todo lo que se registre aparecerá en vivo en la pantalla.','Toca «Comenzar el mapeo» al final de esta página.'],clave:'Hoy pasamos de los problemas que vivimos en el barrio a soluciones concretas.'},
@@ -1221,7 +1222,7 @@ VISTAS.inicio={
     <div class="panel plain stack">${qrBloque('evaluar','Vecinos · Evaluar','Etapa 2.2. Cada vecino evalúa los proyectos de las otras mesas.')}</div>
    </section>
    <section class="panel plain stack"><div class="row" style="justify-content:space-between"><h2>Indicaciones generales</h2><a class="btn sm" href="#pantalla" target="_blank" rel="noopener">Abrir la pantalla central ↗</a></div>${indicacionesHTML()}<h3>Cómo leer el mapa</h3>${leyendaZonas()}</section>
-   <p class="small muted">¿Necesitas iniciar la jornada o resolver un problema? Entra a <a href="#admin">Administración</a>.</p>
+   <p class="small muted">¿Necesitas iniciar la jornada o resolver un problema? Entra a <a href="#admin">Administración</a>. · ${VERSION}</p>
   </div>`;
  },
  refresh(){
@@ -1253,13 +1254,14 @@ VISTAS.admin={
     <form class="panel stack" id="c-login" novalidate><label class="f">Clave de administración<input type="password" id="c-pin" autocomplete="off"></label><p class="small" id="c-pinerr" style="color:var(--bad);font-weight:700" hidden>La clave no es correcta.</p><button class="btn primary" type="submit" style="align-self:flex-start;--accent:#3D3D3D">Entrar</button></form>`;
    $('#c-login').onsubmit=e=>{e.preventDefault();if($('#c-pin').value===CLAVE_FACILITADOR){LS.set('bd.fac',true);this._k=null;this.refresh();toast('Modo administración activado')}else $('#c-pinerr').hidden=false};return}
   if(this._k!=='on'){this._k='on';
-   ad.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-end"><div class="stack" style="gap:6px"><span class="etapa" style="--accent:#3D3D3D">Administración</span><h1>Control del taller</h1></div><button class="btn sm ghost" id="c-out">Salir</button></div>
+   ad.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-end"><div class="stack" style="gap:6px"><span class="etapa" style="--accent:#3D3D3D">Administración · ${VERSION}</span><h1>Control del taller</h1></div><button class="btn sm ghost" id="c-out">Salir</button></div>
     <div id="aviso"></div>
     <section class="panel stack" id="ad-jor"></section>
     <section class="panel stack"><h2>Estado de las mesas</h2><p class="small muted">Solo para emergencias: normalmente cada secretario avanza su mesa. Mover una mesa cambia lo que ven su secretario y la pantalla.</p><div class="adm-mesas" id="ad-mesas"></div>
      <div class="row"><label class="f" style="flex:0 1 260px">Mover todas las mesas a<select id="ad-all">${FASES.map(f=>`<option value="${f.id}">${f.n} · ${f.c}</option>`).join('')}</select></label><button class="btn sm" id="ad-allgo" style="align-self:flex-end">Aplicar a las 4 mesas</button></div></section>
     <section class="panel stack"><h2>Desafíos</h2><div id="ad-des"></div></section>
-    <section class="panel stack"><h2>Datos de prueba</h2><p class="small muted">Carga 12 relatos, votos, los 3 desafíos, 4 proyectos y evaluaciones marcados como Ejemplo. Luego mueve las mesas a la etapa que quieras revisar.</p><div class="row"><button class="btn" id="c-demo">Cargar datos de ejemplo</button><span class="small muted" id="c-msg"></span></div></section>
+    <details class="guia"><summary>Herramientas de prueba (no usar en el taller real)</summary><div class="guiabody"><p>Una jornada nueva siempre parte vacía. Este botón la llena con datos ficticios marcados como «Ejemplo» (12 relatos, votos, 3 desafíos, 4 proyectos y evaluaciones) para revisar la pantalla sin hacer el taller.</p>
+     <div class="row"><button class="btn" id="c-demo">Cargar datos de ejemplo</button><button class="btn ghost" id="c-undemo">Quitar los datos de ejemplo</button></div><span class="small muted" id="c-msg"></span></div></details>
     <details class="guia"><summary>Ajustes</summary><div class="guiabody">
      <div class="durs">${FASES.map(f=>`<label class="f">${f.n} ${f.c} (min)<input type="number" min="1" max="120" data-dur="${f.id}" value="${dur(f.id)}"></label>`).join('')}</div>
      <label class="row" style="gap:10px;font-weight:700"><input type="checkbox" id="c-tv" style="width:20px;height:20px;accent-color:var(--e0)">Bonificar problemas que ocurren en varias zonas (+${TRANSV*100}% por zona adicional)</label>
@@ -1268,14 +1270,16 @@ VISTAS.admin={
     <section class="panel stack"><h2>Historial de jornadas</h2><div id="ad-hist"></div></section>`;
    $('#c-out').onclick=()=>{LS.set('bd.fac',false);this._k=null;this.refresh()};
    $('#ad-allgo').onclick=async()=>{const f=$('#ad-all').value;for(const m of MS)await setMesa(m,{fase:f,faseInicio:Date.now(),extra:0});toast('Las 4 mesas pasaron a '+FASEM[f].c)};
-   $('#c-demo').onclick=cargarEjemplo;
+   const dbl=(b,txt,fn)=>b.onclick=()=>{if(!b.dataset.c){b.dataset.c=1;b.classList.add('peligro');b.textContent=txt;return}delete b.dataset.c;b.classList.remove('peligro');fn()};
+   dbl($('#c-demo'),'Confirmar: llenar esta jornada con datos ficticios',()=>{$('#c-demo').textContent='Cargar datos de ejemplo';cargarEjemplo()});
+   dbl($('#c-undemo'),'Confirmar: quitar los datos de ejemplo',()=>{$('#c-undemo').textContent='Quitar los datos de ejemplo';quitarEjemplo()});
    ad.querySelectorAll('[data-dur]').forEach(i=>i.onchange=()=>{const d={...DUR0,...(S.estado.duraciones||{})};d[i.dataset.dur]=Math.max(1,Math.min(120,+i.value||DUR0[i.dataset.dur]));setEstado({duraciones:d})});
    $('#c-tv').onchange=e=>setEstado({transversalidad:e.target.checked});
    $('#c-url').onchange=e=>setEstado({url:e.target.value.trim()});
   }
   $('#aviso').innerHTML=avisoAcceso();
   $('#c-tv').checked=!!S.estado.transversalidad;if(document.activeElement!==$('#c-url'))$('#c-url').value=S.estado.url||'';
-  $('#c-demo').disabled=!hayJornada();
+  $('#c-demo').disabled=!hayJornada();$('#c-undemo').disabled=!hayJornada();
   /* jornada */
   const j=$('#ad-jor'),ses=sesionActual();const jk=hayJornada()?'on'+S.estado.tid+(ses&&ses.nombre):'off';
   if(j.dataset.k!==jk){j.dataset.k=jk;
@@ -1767,6 +1771,7 @@ const PV={};
 VISTAS.pantalla={
  mount(el){el.innerHTML=`<div class="pv"><div class="pv-top"><span class="logo" style="font-size:1.35rem"><b>EL BARRIO</b><b>DECIDE</b></span><div class="pv-prog" id="pv-prog"></div></div><div id="aviso"></div><div id="pv-wait"></div><div class="pv-body" id="pv-body"></div><div class="mstrip" id="pv-mesas"></div></div>`;this._m=null},
  refresh(){
+  if(S.estado.tid!==this._t){this._t=S.estado.tid;this._m=null}
   const modo=modoPantalla();const fase=FASE_MODO[modo];document.body.dataset.e=FASEM[fase].e;
   $('#aviso').innerHTML=S.modo==='local'?avisoAcceso():S.modo==='error'?avisoAcceso():'';
   pintarProg(fase);pintarMesasStrip(modo);
@@ -1906,8 +1911,8 @@ async function cargarEjemplo(){
    const V=[[0,0,0,1,6,6,7,7,2,9],[1,1,4,4,0,6,7,3,8,10],[2,2,2,9,9,6,0,1,4,11],[0,6,6,4,4,1,7,9,3,5],[6,6,9,9,2,0,4,1,10,11],[0,0,4,4,7,7,6,9,1,2],[3,3,9,9,6,0,4,7,2,8],[4,4,0,1,6,6,9,2,11,5]];
    for(let k=0;k<V.length;k++){const a={};V[k].forEach(i=>a[ids[i]]=(a[ids[i]]||0)+1);await put('votos','ej-'+rid(),{asignacion:a,mesa:k%MESAS+1,ejemplo:true,ts:Date.now()})}
    await esperar(()=>S.data.votos.filter(v=>v.ejemplo).length>=V.length);
-   const T=calcTop3();await put('comun','top3',{ids:T,ts:Date.now()});
-   for(let i=0;i<T.length;i++){const p=probById(T[i]);const bid='ej-'+rid();const tx=ejemplosDesafio(p)[0][1];const act=[ACTORES[0],ACTORES[1],ACTORES[2+i]];await put('buzon',bid,{idx:i,pid:T[i],texto:tx,actores:act,mesa:i+1,fuente:'redactor',ejemplo:true,ts:Date.now()});await put('comun','des-'+i,{idx:i,pid:T[i],texto:tx,actores:act,mesa:i+1,fuente:'redactor',bid,ts:Date.now()})}
+   const T=calcTop3();await put('comun','top3',{ids:T,ejemplo:true,ts:Date.now()});
+   for(let i=0;i<T.length;i++){const p=probById(T[i]);const bid='ej-'+rid();const tx=ejemplosDesafio(p)[0][1];const act=[ACTORES[0],ACTORES[1],ACTORES[2+i]];await put('buzon',bid,{idx:i,pid:T[i],texto:tx,actores:act,mesa:i+1,fuente:'redactor',ejemplo:true,ts:Date.now()});await put('comun','des-'+i,{idx:i,pid:T[i],texto:tx,actores:act,mesa:i+1,fuente:'redactor',bid,ejemplo:true,ts:Date.now()})}
    const PIN={1:0,2:1,3:2,4:0};await esperar(()=>top3().length===T.length);
    for(const m of MS)await setMesa(m,{desafio:Math.min(PIN[m],T.length-1)});
    const SOL=[[1,['F3','N2','C4','V1'],'Veredas despejadas','Una franja peatonal continua en Pocuro y Manuel Montt, con lugares autorizados para estacionar motos señalados en la calle y en las apps, y puntos de entrega acordados con los vecinos.'],
@@ -1920,6 +1925,15 @@ async function cargarEjemplo(){
    msg.innerHTML='Listo: 12 relatos, 8 votantes, 3 desafíos, 4 proyectos y 8 evaluaciones. Usa «Mover todas las mesas a» para revisar cada etapa en la <a href="#pantalla" target="_blank" rel="noopener">pantalla</a>.';toast('Datos de ejemplo cargados');
   }catch(e){console.warn(e);msg.textContent='No se pudo cargar el ejemplo. Revisa la conexión y las reglas de la base de datos.'}
   btn.disabled=false;
+}
+
+async function quitarEjemplo(){
+  const msg=$('#c-msg');if(!hayJornada())return;let n=0;
+  try{
+   for(const col of COLS){if(col==='mesas')continue;for(const d of [...S.data[col]])if(d.ejemplo){await del(col,d.id);n++}}
+   const T=top3();if(!T.length||!T.some(probById)){for(const m of MS)if(desafioDeMesa(m)!=null)await setMesa(m,{desafio:null})}
+   msg.textContent=n?`Se quitaron ${n} datos de ejemplo.`:'Esta jornada no tenía datos de ejemplo.';toast('Datos de ejemplo quitados');
+  }catch(err){console.warn(err);msg.textContent='No se pudieron quitar todos los datos de ejemplo.'}
 }
 
 /* ============ ARRANQUE ============ */
