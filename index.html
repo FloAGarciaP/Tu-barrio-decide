@@ -952,15 +952,19 @@ async function iniciarJornada(nombre,fecha,lugar){
 }
 async function cerrarJornada(){try{await archivarActual()}catch(e){}if(await setEstado({tid:'',sesion:null}))toast('Jornada cerrada y guardada')}
 /* eliminar jornadas: borra sus datos y su registro del historial */
+const borrando=new Set();
 async function eliminarJornada(id){
   if(id===S.estado.tid){toast('Cierra la jornada activa antes de eliminarla');return false}
+  borrando.add(id);refresh();
   try{
    if(S.modo==='compartido'){
-    for(const col of COLS){const snap=await S.db.collection(`talleres/${id}/${col}`).get();for(const d of snap.docs)await S.db.doc(`talleres/${id}/${col}/${d.id}`).delete()}
+    /* primero sale del historial; luego se limpian sus datos */
     await S.db.doc('control/estado/sesiones/'+id).delete();
-   }else{localDB=LS.get(LKEY,localDB);delete localDB.t[id];delete localDB.sesiones[id];saveLocal();pullLocal();refresh()}
+    await Promise.all(COLS.map(async col=>{const snap=await S.db.collection(`talleres/${id}/${col}`).get();await Promise.all(snap.docs.map(d=>d.ref.delete()))}));
+   }else{localDB=LS.get(LKEY,localDB);delete localDB.t[id];delete localDB.sesiones[id];saveLocal();pullLocal()}
    return true
-  }catch(e){console.warn(e);toast('No se pudo eliminar la jornada. Revisa la conexión.');return false}
+  }catch(e){console.warn(e);toast('No se pudo eliminar la jornada: '+(e&&e.code==='permission-denied'?'Firebase no dio permiso. Revisa las reglas.':'revisa la conexión.'));return false}
+  finally{borrando.delete(id);refresh()}
 }
 async function reabrirJornada(id){
   const s=S.sesiones.find(x=>x.id===id);if(!s)return;try{await archivarActual()}catch(e){}
@@ -1298,14 +1302,14 @@ VISTAS.admin={
   /* enlaces */
   const b=baseURL();$('#ad-links').innerHTML=b?[['inicio','Inicio (moderador)'],...MS.map(m=>['mesa'+m,'Secretario Mesa '+m]),['votar','Vecinos · Votar'],['evaluar','Vecinos · Evaluar'],['pantalla','Pantalla central']].map(([r,t])=>`<div class="small"><b>${t}:</b> <a href="#${r}">${esc(b+'#'+r)}</a></div>`).join(''):'<p class="small muted">Publica la página para generar los enlaces.</p>';
   /* historial */
-  const hist=[...S.sesiones].sort((a,b)=>(b.creada||0)-(a.creada||0));
+  const hist=[...S.sesiones].filter(s=>!borrando.has(s.id)).sort((a,b)=>(b.creada||0)-(a.creada||0));
   const cerradas=hist.filter(s=>s.id!==S.estado.tid);
   $('#ad-hist').innerHTML=hist.length?`<div class="hist">${hist.map(s=>`<div class="it"><div><b>${esc(s.nombre)}</b><div class="small muted">${esc(fechaTxt(s.fecha))}${s.lugar?' · '+esc(s.lugar):''}${s.id===S.estado.tid?' · en curso':` · ${s.relatos||0} relatos, ${s.soluciones||0} proyectos`}</div></div>${s.id===S.estado.tid?'<span class="chip" style="background:var(--e0)">Activa</span>':`<span class="row" style="gap:6px"><button class="btn sm ghost" data-reabrir="${s.id}">Reabrir</button><button class="btn sm ${histConf===s.id?'peligro':'ghost'}" data-borrar="${s.id}">${histConf===s.id?'¿Eliminar definitivamente?':'Eliminar'}</button></span>`}</div>`).join('')}</div>
    ${cerradas.length>1?`<div class="row" style="margin-top:10px"><button class="btn sm ${histConf==='*'?'peligro':'ghost'}" id="h-all">${histConf==='*'?`Confirmar: eliminar ${cerradas.length} jornadas y todos sus datos`:'Eliminar todas las jornadas cerradas'}</button></div>`:''}
    <p class="small muted" style="margin-top:8px">Eliminar borra la jornada y todos sus relatos, votos, desafíos, proyectos y evaluaciones. No se puede deshacer. La jornada activa se debe cerrar antes de eliminarla.</p>`:'<p class="small muted">Aún no hay jornadas guardadas.</p>';
   document.querySelectorAll('[data-reabrir]').forEach(x=>x.onclick=()=>reabrirJornada(x.dataset.reabrir));
-  document.querySelectorAll('[data-borrar]').forEach(x=>x.onclick=async()=>{const id=x.dataset.borrar;if(histConf!==id){histConf=id;this.refresh();return}histConf=null;x.disabled=true;x.textContent='Eliminando…';if(await eliminarJornada(id))toast('Jornada eliminada');this.refresh()});
-  const ha=$('#h-all');if(ha)ha.onclick=async()=>{if(histConf!=='*'){histConf='*';this.refresh();return}histConf=null;ha.disabled=true;ha.textContent='Eliminando…';let n=0;for(const s of cerradas)if(await eliminarJornada(s.id))n++;toast(n+' jornadas eliminadas');this.refresh()};
+  document.querySelectorAll('[data-borrar]').forEach(x=>x.onclick=async()=>{const id=x.dataset.borrar;if(histConf!==id){histConf=id;this.refresh();return}histConf=null;if(await eliminarJornada(id))toast('Jornada eliminada')});
+  const ha=$('#h-all');if(ha)ha.onclick=async()=>{if(histConf!=='*'){histConf='*';this.refresh();return}histConf=null;const r=await Promise.all(cerradas.map(s=>eliminarJornada(s.id)));toast(r.filter(Boolean).length+' jornadas eliminadas')};
  }
 };
 
