@@ -695,6 +695,25 @@ body[data-rol="part"] .pills{display:none}
 .adm-mesas .it{display:grid;grid-template-columns:90px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid #DDD}
 .adm-mesas select{width:auto}
 @media (max-width:600px){.adm-mesas .it{grid-template-columns:1fr}}
+/* v6.1 */
+body[data-rol="sec"] #s-next{position:sticky;bottom:0;z-index:20;padding-bottom:8px;background:linear-gradient(to top,#fff 70%,rgba(255,255,255,0))}
+body[data-rol="sec"] #s-next .nextbar{margin-top:16px;background:#fff;box-shadow:0 -4px 18px rgba(0,0,0,.08);padding:10px 14px}
+body[data-rol="sec"] #s-next .nextbar .t span{font-size:.82rem}
+body[data-rol="sec"] #s-next .nextbar .btn{padding:11px 18px}
+body[data-rol="secsel"] .pills{display:none}
+.pvwait{display:flex;gap:10px 16px;align-items:center;flex-wrap:wrap;padding:12px 16px;border:2px dashed var(--accent);background:var(--accent-t);font-weight:800;font-size:1.05rem}
+.pvwait .mchk{margin:0}
+.pvwait .loader{justify-content:flex-start}
+.emergencia>summary{border-color:var(--bad);color:var(--bad)}
+.emerg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.emerg .btn{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;white-space:normal;padding:12px 14px;height:auto}
+.emerg .btn b{font-size:.95rem}
+.emerg .btn span{font-size:.78rem;font-weight:500;opacity:.8}
+.emerg .btn.confirmar,#em-allgo.confirmar{background:var(--bad);border-color:var(--bad);color:#fff}
+button.mesacard{border:0;font:inherit;text-align:left;cursor:pointer;min-height:130px;justify-content:space-between}
+button.mesacard:hover{filter:brightness(1.06)}
+button.mesacard[data-c] .st{background:#1E1E1E;color:#fff}
+.btn.peligro{background:var(--bad);border-color:var(--bad);color:#fff}
 
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -932,6 +951,17 @@ async function iniciarJornada(nombre,fecha,lugar){
   if(await setEstado({tid,sesion:{nombre,fecha,lugar}}))toast('Jornada iniciada');
 }
 async function cerrarJornada(){try{await archivarActual()}catch(e){}if(await setEstado({tid:'',sesion:null}))toast('Jornada cerrada y guardada')}
+/* eliminar jornadas: borra sus datos y su registro del historial */
+async function eliminarJornada(id){
+  if(id===S.estado.tid){toast('Cierra la jornada activa antes de eliminarla');return false}
+  try{
+   if(S.modo==='compartido'){
+    for(const col of COLS){const snap=await S.db.collection(`talleres/${id}/${col}`).get();for(const d of snap.docs)await S.db.doc(`talleres/${id}/${col}/${d.id}`).delete()}
+    await S.db.doc('control/estado/sesiones/'+id).delete();
+   }else{localDB=LS.get(LKEY,localDB);delete localDB.t[id];delete localDB.sesiones[id];saveLocal();pullLocal();refresh()}
+   return true
+  }catch(e){console.warn(e);toast('No se pudo eliminar la jornada. Revisa la conexión.');return false}
+}
 async function reabrirJornada(id){
   const s=S.sesiones.find(x=>x.id===id);if(!s)return;try{await archivarActual()}catch(e){}
   if(await setEstado({tid:id,sesion:{nombre:s.nombre,fecha:s.fecha,lugar:s.lugar}}))toast('Jornada reabierta');
@@ -1032,6 +1062,28 @@ function qrSVG(text){
 }
 function qrBloque(ruta,titulo,txt){const b=baseURL();return `<div class="qrbig">${b?`<div class="qr">${qrSVG(b+'#'+ruta)}</div>`:''}<div class="stack" style="gap:6px"><h3>${titulo}</h3><p class="small">${txt}</p>${b?`<span class="urltxt" style="background:var(--sunk)">${esc(b+'#'+ruta)}</span>`:''}<a class="btn sm ghost" href="#${ruta}" target="_blank" rel="noopener" style="align-self:flex-start">Abrir en otra pestaña</a></div></div>`}
 
+/* comandos de emergencia: mueven varias mesas a la vez */
+async function moverTodas(f,soloAtrasadas){let n=0;for(const m of MS){if(soloAtrasadas&&FI(faseMesa(m))>=FI(f))continue;await setMesa(m,{fase:f,faseInicio:Date.now(),extra:0});n++}return n}
+function emergenciaHTML(){
+  if(!hayJornada())return '<p class="small muted">No hay jornada activa: iníciala desde <a href="#admin">Administración</a>.</p>';
+  const sig=FASES[Math.min(FASES.length-1,FI(minFase())+1)];
+  return `<div class="emerg">
+   <button class="btn" data-em="votacion"><b>Abrir la votación ahora</b><span>Pasa a votación todas las mesas que siguen en el mapeo, aunque no hayan terminado.</span></button>
+   <button class="btn" data-em="sig"><b>Pasar las mesas atrasadas a ${sig.n} · ${esc(sig.c)}</b><span>Iguala a las mesas que van más lento con la siguiente etapa.</span></button>
+   <button class="btn" data-em="evaluacion"><b>Abrir la evaluación ahora</b><span>Pasa a evaluación todas las mesas, aunque no hayan entregado su proyecto.</span></button>
+   <button class="btn" data-em="mas5"><b>+5 minutos a todas las mesas</b><span>Extiende el tiempo de la etapa actual en cada mesa.</span></button></div>
+   <div class="adm-mesas">${MS.map(m=>{const f=faseMesa(m);return `<div class="it"><b>Mesa ${m}</b><span class="small">${FASEM[f].n} · ${esc(FASEM[f].t)} · ${S.data.problemas.filter(p=>+p.mesa===m).length} relatos</span><select data-emv="${m}" aria-label="Etapa de la mesa ${m}">${FASES.map(x=>`<option value="${x.id}" ${x.id===f?'selected':''}>${x.n} · ${x.c}</option>`).join('')}</select></div>`}).join('')}</div>
+   <div class="row"><label class="f" style="flex:0 1 260px">Llevar todas las mesas a<select id="em-all">${FASES.map(f=>`<option value="${f.id}">${f.n} · ${f.c}</option>`).join('')}</select></label><button class="btn sm" id="em-allgo" style="align-self:flex-end">Aplicar a las 4 mesas</button></div>`
+}
+function bindEmergencia(el){
+  const conf=(b,fn)=>b.onclick=async()=>{if(!b.dataset.c){b.dataset.c=1;b.classList.add('confirmar');const t=b.querySelector('b')||b;t.insertAdjacentText('afterbegin','Confirmar: ');return}b.disabled=true;await fn();delete b.dataset.c};
+  el.querySelectorAll('[data-em]').forEach(b=>conf(b,async()=>{const k=b.dataset.em;
+   if(k==='mas5'){for(const m of MS)await setMesa(m,{extra:(+mesaDoc(m).extra||0)+5});toast('+5 minutos para todas las mesas');return}
+   const f=k==='sig'?FASES[Math.min(FASES.length-1,FI(minFase())+1)].id:k;const n=await moverTodas(f,true);toast(n?`${n} mesa${n>1?'s':''} pasaron a ${FASEM[f].c}`:'Todas las mesas ya estaban en esa etapa o más adelante')}));
+  el.querySelectorAll('[data-emv]').forEach(s=>s.onchange=()=>moverMesa(+s.dataset.emv,s.value));
+  const g=el.querySelector('#em-allgo');if(g)conf(g,async()=>{const f=$('#em-all').value;await moverTodas(f,false);toast('Las 4 mesas pasaron a '+FASEM[f].c)});
+}
+
 /* ============ UTILIDADES DE INTERFAZ ============ */
 function tween(el,to,dec=1){
   if(!el)return;const from=Number.isFinite(el._v)?el._v:0;el._v=to;
@@ -1091,7 +1143,7 @@ function fichaMenuHTML(s,o={}){
 }
 
 /* ============ RUTAS Y MARCO ============ */
-const RUTAS={inicio:{rol:'inicio'},votar:{rol:'part',e:'12'},evaluar:{rol:'part',e:'22'},pantalla:{rol:'pantalla'},admin:{rol:'admin'}};
+const RUTAS={inicio:{rol:'inicio'},secretario:{rol:'secsel'},votar:{rol:'part',e:'12'},evaluar:{rol:'part',e:'22'},pantalla:{rol:'pantalla'},admin:{rol:'admin'}};
 MS.forEach(m=>RUTAS['mesa'+m]={rol:'sec',mesa:m});
 const ALIAS={registro:'inicio',relato:'inicio',buzon:'inicio',mercado:'inicio',soluciones:'inicio'};
 function ruta(){let h=decodeURIComponent(location.hash.replace('#',''));h=ALIAS[h]||h;return RUTAS[h]?h:'inicio'}
@@ -1107,9 +1159,9 @@ function refresh(){
 }
 function pintarMarco(){
   const R=RUTAS[vistaActual];
-  const rol=$('#rol');rol.textContent={inicio:'Inicio',part:'Participante',sec:'Secretario · Mesa '+R.mesa,admin:'Administración',pantalla:'Pantalla'}[R.rol];
+  const rol=$('#rol');rol.textContent={inicio:'Inicio',secsel:'Secretario',part:'Participante',sec:'Secretario · Mesa '+R.mesa,admin:'Administración',pantalla:'Pantalla'}[R.rol];
   rol.style.setProperty('--rc',R.rol==='sec'?'var(--accent)':R.rol==='admin'?'#3D3D3D':R.rol==='part'?'var(--accent)':'var(--e0)');
-  const L=R.rol==='sec'?[['inicio','Inicio'],['pantalla','Pantalla ↗',1]]:R.rol==='admin'?[['inicio','Inicio'],['pantalla','Pantalla ↗',1],...MS.map(m=>['mesa'+m,'Mesa '+m])]:R.rol==='inicio'?[['pantalla','Pantalla ↗',1],['admin','Administración']]:[];
+  const L=R.rol==='sec'?[['pantalla','Pantalla ↗',1]]:R.rol==='secsel'?[['inicio','Inicio']]:R.rol==='admin'?[['inicio','Inicio'],['pantalla','Pantalla ↗',1],...MS.map(m=>['mesa'+m,'Mesa '+m])]:R.rol==='inicio'?[['pantalla','Pantalla ↗',1],['admin','Administración']]:[];
   const nk=L.map(x=>x[0]).join();const nav=$('#nav');if(nav.dataset.k!==nk){nav.dataset.k=nk;nav.innerHTML=L.map(([h,t,b])=>`<a href="#${h}" ${b?'target="_blank" rel="noopener"':''}>${t}</a>`).join('')}
   $('#pills').innerHTML=S.modo==='compartido'?'<span class="chip live"><i></i>En vivo</span>':S.modo==='local'?'<span class="chip local"><i></i>Solo este dispositivo</span>':S.modo==='error'?'<span class="chip off">Sin conexión</span>':'<span class="chip off">Conectando…</span>';
   if(R.rol==='sec')pintarTrack(R.mesa);
@@ -1158,7 +1210,8 @@ VISTAS.inicio={
     <p class="lead">De vecinos a gestores: tu voz crea la solución que quieres ver en la comuna.</p>
     <p class="small muted" id="i-jor"></p></div><img class="vecina" alt="" src="${VECINA}"></div>
    <div id="aviso"></div>
-   <section class="stack"><h2>Secretarios: entren a su mesa</h2><p class="small muted">Cada secretario abre el link o escanea el QR de su mesa en la tablet. Desde ahí avanza su mesa etapa por etapa.</p><div class="mesacards" id="i-mesas"></div></section>
+   <section class="stack"><div class="row" style="justify-content:space-between;align-items:flex-end"><div class="stack" style="gap:4px"><h2>Secretarios: entren a su mesa</h2><p class="small muted">Cada secretario elige su mesa una sola vez en su tablet (o escanea el QR de su mesa). Esa tablet queda fija para esa mesa.</p></div><a class="btn primary" href="#secretario" style="--accent:var(--e0)">Soy secretario: elegir mi mesa</a></div><div class="mesacards" id="i-mesas"></div></section>
+   <details class="guia emergencia" id="i-em"><summary>Comandos de emergencia del moderador</summary><div class="guiabody" id="i-emb"></div></details>
    <section class="grid g2" style="align-items:start">
     <div class="panel plain stack">${qrBloque('votar','Vecinos · Votar','Etapa 1.2. Cada vecino reparte 10 votos desde su celular.')}</div>
     <div class="panel plain stack">${qrBloque('evaluar','Vecinos · Evaluar','Etapa 2.2. Cada vecino evalúa los proyectos de las otras mesas.')}</div>
@@ -1170,11 +1223,22 @@ VISTAS.inicio={
  refresh(){
   $('#aviso').innerHTML=avisoAcceso()+(hayJornada()?'':`<div class="notice info">Aún no hay una jornada activa. Iníciala desde <a href="#admin">Administración</a>.</div>`);
   const ses=sesionActual();$('#i-jor').innerHTML=hayJornada()?`Jornada activa: <b>${esc(ses&&ses.nombre||'Jornada')}</b>${ses&&ses.fecha?' · '+esc(fechaTxt(ses.fecha)):''}${ses&&ses.lugar?' · '+esc(ses.lugar):''}`:'Co-diseño territorial para la convivencia y el delivery en Providencia · 4 mesas de 4 vecinos · 2 horas';
+  this._em();
   const b=baseURL();const k=b+'|'+MS.map(faseMesa).join()+hayJornada();const el=$('#i-mesas');if(el.dataset.k===k)return;el.dataset.k=k;
-  el.innerHTML=MS.map(m=>{const f=FASEM[faseMesa(m)];return `<div class="mesacard mc${m}"><h3>Mesa ${m}</h3>${hayJornada()?`<span class="st">Etapa ${f.n} · ${esc(f.c)}</span>`:''}${b?`<div class="qr" style="width:120px">${qrSVG(b+'#mesa'+m)}</div><span class="urltxt">${esc(b+'#mesa'+m)}</span>`:''}<a class="btn sm" href="#mesa${m}" style="align-self:flex-start">Entrar como secretario</a></div>`}).join('');
+  el.innerHTML=MS.map(m=>{const f=FASEM[faseMesa(m)];return `<div class="mesacard mc${m}"><h3>Mesa ${m}</h3>${hayJornada()?`<span class="st">Etapa ${f.n} · ${esc(f.c)}</span>`:''}${b?`<div class="qr" style="width:120px">${qrSVG(b+'#mesa'+m)}</div><span class="urltxt">${esc(b+'#mesa'+m)}</span>`:''}</div>`}).join('');
+ },
+ _em(){
+  const el=$('#i-emb');S.esAdmin=!!LS.get('bd.fac',false);
+  if(!S.esAdmin){if(el.dataset.k==='login')return;el.dataset.k='login';
+   el.innerHTML=`<p>Para usar los comandos de emergencia ingresa la clave de administración.</p><form class="row" id="em-login" novalidate><input type="password" id="em-pin" autocomplete="off" aria-label="Clave" style="flex:0 1 220px"><button class="btn sm" type="submit">Entrar</button><span class="small" id="em-err" style="color:var(--bad);font-weight:700" hidden>Clave incorrecta</span></form>`;
+   $('#em-login').onsubmit=e=>{e.preventDefault();if($('#em-pin').value===CLAVE_FACILITADOR){LS.set('bd.fac',true);el.dataset.k='';this._em()}else $('#em-err').hidden=false};return}
+  if(el.contains(document.activeElement)&&document.activeElement.tagName==='SELECT')return;
+  const k='on|'+MS.map(faseMesa).join()+S.data.problemas.length+hayJornada();if(el.dataset.k===k)return;el.dataset.k=k;
+  el.innerHTML=`<p class="small muted">Úsalos solo si una mesa se atrasa o algo falla. Cada botón pide confirmación.</p>${emergenciaHTML()}`;bindEmergencia(el);
  }
 };
 
+let histConf=null;
 /* ---------- ADMINISTRACIÓN: iniciar jornada y controles de emergencia ---------- */
 VISTAS.admin={
  mount(el){el.innerHTML=`<div class="stack" style="max-width:960px;margin:0 auto" id="ad"></div>`;this._k=null},
@@ -1235,23 +1299,48 @@ VISTAS.admin={
   const b=baseURL();$('#ad-links').innerHTML=b?[['inicio','Inicio (moderador)'],...MS.map(m=>['mesa'+m,'Secretario Mesa '+m]),['votar','Vecinos · Votar'],['evaluar','Vecinos · Evaluar'],['pantalla','Pantalla central']].map(([r,t])=>`<div class="small"><b>${t}:</b> <a href="#${r}">${esc(b+'#'+r)}</a></div>`).join(''):'<p class="small muted">Publica la página para generar los enlaces.</p>';
   /* historial */
   const hist=[...S.sesiones].sort((a,b)=>(b.creada||0)-(a.creada||0));
-  $('#ad-hist').innerHTML=hist.length?`<div class="hist">${hist.map(s=>`<div class="it"><div><b>${esc(s.nombre)}</b><div class="small muted">${esc(fechaTxt(s.fecha))}${s.lugar?' · '+esc(s.lugar):''}${s.id===S.estado.tid?' · en curso':` · ${s.relatos||0} relatos, ${s.soluciones||0} proyectos`}</div></div>${s.id===S.estado.tid?'<span class="chip" style="background:var(--e0)">Activa</span>':`<button class="btn sm ghost" data-reabrir="${s.id}">Reabrir</button>`}</div>`).join('')}</div>`:'<p class="small muted">Aún no hay jornadas guardadas.</p>';
+  const cerradas=hist.filter(s=>s.id!==S.estado.tid);
+  $('#ad-hist').innerHTML=hist.length?`<div class="hist">${hist.map(s=>`<div class="it"><div><b>${esc(s.nombre)}</b><div class="small muted">${esc(fechaTxt(s.fecha))}${s.lugar?' · '+esc(s.lugar):''}${s.id===S.estado.tid?' · en curso':` · ${s.relatos||0} relatos, ${s.soluciones||0} proyectos`}</div></div>${s.id===S.estado.tid?'<span class="chip" style="background:var(--e0)">Activa</span>':`<span class="row" style="gap:6px"><button class="btn sm ghost" data-reabrir="${s.id}">Reabrir</button><button class="btn sm ${histConf===s.id?'peligro':'ghost'}" data-borrar="${s.id}">${histConf===s.id?'¿Eliminar definitivamente?':'Eliminar'}</button></span>`}</div>`).join('')}</div>
+   ${cerradas.length>1?`<div class="row" style="margin-top:10px"><button class="btn sm ${histConf==='*'?'peligro':'ghost'}" id="h-all">${histConf==='*'?`Confirmar: eliminar ${cerradas.length} jornadas y todos sus datos`:'Eliminar todas las jornadas cerradas'}</button></div>`:''}
+   <p class="small muted" style="margin-top:8px">Eliminar borra la jornada y todos sus relatos, votos, desafíos, proyectos y evaluaciones. No se puede deshacer. La jornada activa se debe cerrar antes de eliminarla.</p>`:'<p class="small muted">Aún no hay jornadas guardadas.</p>';
   document.querySelectorAll('[data-reabrir]').forEach(x=>x.onclick=()=>reabrirJornada(x.dataset.reabrir));
+  document.querySelectorAll('[data-borrar]').forEach(x=>x.onclick=async()=>{const id=x.dataset.borrar;if(histConf!==id){histConf=id;this.refresh();return}histConf=null;x.disabled=true;x.textContent='Eliminando…';if(await eliminarJornada(id))toast('Jornada eliminada');this.refresh()});
+  const ha=$('#h-all');if(ha)ha.onclick=async()=>{if(histConf!=='*'){histConf='*';this.refresh();return}histConf=null;ha.disabled=true;ha.textContent='Eliminando…';let n=0;for(const s of cerradas)if(await eliminarJornada(s.id))n++;toast(n+' jornadas eliminadas');this.refresh()};
  }
 };
+
+/* ---------- SECRETARIO: elegir la mesa una sola vez ---------- */
+const mesaFija=()=>{const v=LS.get('bd.mesa',null);return MS.includes(+v)?+v:null};
+VISTAS.secretario={
+ mount(el){
+  const f=mesaFija();
+  el.innerHTML=`<div class="narrow stack" style="gap:20px"><div class="stack" style="gap:6px"><span class="etapa" style="--accent:var(--e0)">Secretario</span><h1>${f?'Esta tablet es de la Mesa '+f:'¿Desde qué mesa vas a registrar?'}</h1>
+   <p class="muted" style="font-weight:500">${f?'Todo lo que registres en esta tablet queda a nombre de esa mesa.':'Elige tu mesa una sola vez. Después esta tablet queda fija para esa mesa y no se puede cambiar sin la clave de administración.'}</p></div>
+   ${f?`<a class="btn primary" href="#mesa${f}" style="align-self:flex-start;--accent:var(--e0)">Continuar en la Mesa ${f} →</a>`:`<div class="mesacards">${MS.map(m=>`<button class="mesacard mc${m} selmesa" data-m="${m}" type="button"><h3>Mesa ${m}</h3><span class="st">Elegir esta mesa</span></button>`).join('')}</div><p class="small" id="sm-c" hidden></p>`}</div>`;
+  el.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const m=+b.dataset.m;if(b.dataset.c){LS.set('bd.mesa',m);location.hash='mesa'+m;return}el.querySelectorAll('[data-m]').forEach(x=>{delete x.dataset.c;x.querySelector('.st').textContent='Elegir esta mesa'});b.dataset.c=1;b.querySelector('.st').textContent='Toca de nuevo para confirmar la Mesa '+m});
+ }
+};
+function bloqueoMesa(el,fija,pedida){
+  el.innerHTML=`<div class="narrow stack" style="gap:16px"><div class="notice"><b>Esta tablet está registrando la Mesa ${fija}.</b> Para no mezclar los registros, no se puede abrir otra mesa desde aquí.</div>
+   <a class="btn primary" href="#mesa${fija}" style="align-self:flex-start">Volver a la Mesa ${fija}</a>
+   <details class="guia"><summary>Cambiar esta tablet a la Mesa ${pedida}</summary><div class="guiabody"><p>Solo si esta tablet cambió de mesa. Requiere la clave de administración.</p><form class="row" id="cm-f" novalidate><input type="password" id="cm-pin" aria-label="Clave" style="flex:0 1 220px"><button class="btn sm" type="submit">Cambiar a la Mesa ${pedida}</button><span class="small" id="cm-err" style="color:var(--bad);font-weight:700" hidden>Clave incorrecta</span></form></div></details></div>`;
+  $('#cm-f').onsubmit=e=>{e.preventDefault();if($('#cm-pin').value===CLAVE_FACILITADOR){LS.set('bd.mesa',pedida);mount()}else $('#cm-err').hidden=false};
+}
 
 /* ---------- SECRETARIO DE MESA ---------- */
 const TITULOS={inicio:'Bienvenida a la mesa',registro:'Registro de relatos',votacion:'Así se ponderan los problemas',desafios:'De problema a desafío',mercado:'Mercado de soluciones',evaluacion:'Evaluación de proyectos',cierre:'Cierre'};
 const SEC={};let secM=1,secFase=null;
 VISTAS.mesa={
- mount(el,R){secM=R.mesa;secFase=null;LS.set('bd.mesa',secM);
+ mount(el,R){secFase=null;const fija=mesaFija();
+  if(fija&&fija!==R.mesa){secM=null;bloqueoMesa(el,fija,R.mesa);return}
+  secM=R.mesa;LS.set('bd.mesa',secM);
   el.innerHTML=`<div class="stack sec"><div id="aviso"></div><div id="s-head" class="stack" style="gap:12px"></div><div id="s-body" class="stack"></div><div id="s-next"></div>
    <details class="guia" id="s-ind"><summary>Indicaciones generales del taller</summary><div class="guiabody">${indicacionesHTML()}<h4>Mapa</h4>${leyendaZonas()}</div></details>
-   <details class="guia"><summary>¿Algo salió mal?</summary><div class="guiabody"><p>Si la mesa avanzó por error, puedes volver a la etapa anterior. Para otros problemas, pide ayuda en <a href="#admin">Administración</a>.</p><button class="btn sm ghost" id="s-back" style="align-self:flex-start">← Volver a la etapa anterior</button></div></details></div>`;
+   <details class="guia"><summary>¿Algo salió mal?</summary><div class="guiabody"><p>Si la mesa avanzó por error, puedes volver a la etapa anterior. Si otra mesa se atrasó o algo falla, usa los <a href="#inicio">comandos de emergencia en Inicio</a>.</p><button class="btn sm ghost" id="s-back" style="align-self:flex-start">← Volver a la etapa anterior</button></div></details></div>`;
   $('#s-back').onclick=()=>{const i=FI(faseMesa(secM));if(i>0)moverMesa(secM,FASES[i-1].id)};
  },
  refresh(){
-  const m=secM;
+  const m=secM;if(!m)return;
   if(!hayJornada()){$('#aviso').innerHTML=sinJornada();$('#s-head').innerHTML='';$('#s-body').innerHTML='';$('#s-next').innerHTML='';secFase=null;return}
   $('#aviso').innerHTML=avisoAcceso();
   const f=faseMesa(m);document.body.dataset.e=FASEM[f].e;
@@ -1266,11 +1355,11 @@ VISTAS.mesa={
 function nextCfg(m,f){
   switch(f){
    case 'inicio':return {t:'Comenzar el mapeo',d:'Abre el registro de relatos de tu mesa.',to:'registro'};
-   case 'registro':{const n=S.data.problemas.filter(p=>+p.mesa===m).length;return {t:'Terminar mapeo y abrir la votación',d:n?`${n} relato${n>1?'s':''} registrado${n>1?'s':''}. La votación empieza cuando las ${MESAS} mesas terminen el mapeo.`:'Registra al menos un relato antes de pasar a la votación.',to:'votacion',dis:!n,conf:true}}
-   case 'votacion':return todasEn('votacion')?{t:'Cerrar votación y pasar a desafíos',d:'Cuando los vecinos de tu mesa hayan votado. Los desafíos se definen cuando las 4 mesas cierran la votación.',to:'desafios',conf:true}:{t:'Cerrar votación y pasar a desafíos',d:`La votación aún no comienza: falta${faltanEn('votacion').length>1?'n':''} ${mesasTxt(faltanEn('votacion'))}.`,dis:true};
+   case 'registro':{const n=S.data.problemas.filter(p=>+p.mesa===m).length;return {t:'Terminar mapeo y abrir la votación',d:n?`${n} relato${n>1?'s':''} registrado${n>1?'s':''}. La votación empieza cuando las ${MESAS} mesas terminen el mapeo.`:'Aún no hay relatos de esta mesa. Puedes pasar igual.',to:'votacion',conf:true}}
+   case 'votacion':return todasEn('votacion')?{t:'Cerrar votación y pasar a desafíos',d:'Cuando los vecinos de tu mesa hayan votado. Los desafíos se definen cuando las 4 mesas cierran la votación.',to:'desafios',conf:true}:{t:'Cerrar votación y pasar a desafíos',d:`La votación aún no comienza: falta${faltanEn('votacion').length>1?'n':''} ${mesasTxt(faltanEn('votacion'))}. El moderador puede abrirla para todas desde los comandos de emergencia en Inicio.`,dis:true};
    case 'desafios':{const i=desafioDeMesa(m);const ok=i!=null&&desOf(i);return {t:'Abrir el mercado de soluciones',d:ok?`Trabajarán el Desafío N°${i+1}.`:'Primero fijen el desafío con el que trabajará la mesa (paso 4).',to:'mercado',dis:!ok}}
-   case 'mercado':{const s=solDe(m);const ok=s&&s.estado==='lista';return {t:'Abrir la evaluación',d:ok?'La evaluación empieza cuando las 4 mesas entreguen su proyecto.':'Entreguen el proyecto (botón «Entregar proyecto») antes de pasar a la evaluación.',to:'evaluacion',dis:!ok}}
-   case 'evaluacion':return todasEn('evaluacion')?{t:'Cerrar evaluación y pasar al cierre',d:'Cuando los vecinos de tu mesa hayan evaluado.',to:'cierre',conf:true}:{t:'Cerrar evaluación y pasar al cierre',d:`La evaluación aún no comienza: falta${faltanEn('evaluacion').length>1?'n':''} ${mesasTxt(faltanEn('evaluacion'))}.`,dis:true};
+   case 'mercado':{const s=solDe(m);const ok=s&&s.estado==='lista';return {t:'Abrir la evaluación',d:ok?'La evaluación empieza cuando las 4 mesas lleguen a esta etapa.':'El proyecto aún no se entrega: al pasar, se entrega como está.',to:'evaluacion',conf:true,antes:ok?null:async()=>{const s=solDe(m);if(s)await put('soluciones','mesa-'+m,{...s,id:undefined,estado:'lista',ts:Date.now()})}}}
+   case 'evaluacion':return todasEn('evaluacion')?{t:'Cerrar evaluación y pasar al cierre',d:'Cuando los vecinos de tu mesa hayan evaluado.',to:'cierre',conf:true}:{t:'Cerrar evaluación y pasar al cierre',d:`La evaluación aún no comienza: falta${faltanEn('evaluacion').length>1?'n':''} ${mesasTxt(faltanEn('evaluacion'))}. El moderador puede abrirla para todas desde los comandos de emergencia en Inicio.`,dis:true};
    default:return null
   }
 }
@@ -1279,7 +1368,7 @@ function pintarNext(m,f){
   if(!c){el.innerHTML='';el.dataset.k='';return}
   const k=f+'|'+c.d+'|'+!!c.dis;if(el.dataset.k===k)return;el.dataset.k=k;
   el.innerHTML=`<div class="nextbar"><div class="t"><b>Siguiente: Etapa ${FASEM[c.to||FASES[FI(f)+1].id].n} · ${esc(FASEM[c.to||FASES[FI(f)+1].id].t)}</b><span>${esc(c.d)}</span></div><button class="btn primary" id="s-go" ${c.dis?'disabled':''}>${esc(c.t)} →</button></div>`;
-  const b=$('#s-go');b.onclick=async()=>{if(c.conf&&!b.dataset.c){b.dataset.c=1;b.textContent='Confirmar: '+c.t;return}b.disabled=true;await moverMesa(m,c.to)};
+  const b=$('#s-go');b.onclick=async()=>{if(c.conf&&!b.dataset.c){b.dataset.c=1;b.textContent='Confirmar: '+c.t;return}b.disabled=true;if(c.antes)await c.antes();await moverMesa(m,c.to)};
 }
 
 /* 0 · inicio */
@@ -1646,34 +1735,47 @@ VISTAS.evaluar={
 };
 
 /* ---------- PANTALLA CENTRAL: solo muestra, cambia sola ---------- */
+/* la pantalla sigue a la mesa más avanzada; las etapas conjuntas muestran a quién se espera */
+const maxFase=()=>FASES[Math.max(...MS.map(m=>FI(faseMesa(m))))].id;
 function modoPantalla(){
   if(!hayJornada())return 'nada';
-  const f=minFase();
-  if(f==='inicio')return MS.some(m=>FI(faseMesa(m))>=1)||S.data.problemas.length?'mapeo':'inicio';
+  const f=maxFase();
+  if(f==='inicio')return S.data.problemas.length?'mapeo':'inicio';
   if(f==='registro')return 'mapeo';
   if(f==='votacion')return 'votacion';
   if(f==='desafios')return 'desafios';
   if(f==='mercado')return entregadas()===MESAS?'menus':'mercado';
-  if(f==='evaluacion')return 'evaluacion';
-  return 'cierre';
+  if(f==='evaluacion')return todasEn('evaluacion')?'evaluacion':'menus';
+  return todasEn('cierre')?'cierre':todasEn('evaluacion')?'evaluacion':'menus';
+}
+function esperaPantalla(modo){
+  const chips=f=>`<div class="mchk">${MS.map(m=>{const ok=FI(faseMesa(m))>=FI(f);return `<span class="${ok?'ok':''}">${ok?'✓':'…'} Mesa ${m}</span>`}).join('')}</div>`;
+  const bar=(t,f)=>`<div class="pvwait"><div class="loader" aria-hidden="true"><i></i><i></i><i></i></div><span>${t}</span>${chips(f)}</div>`;
+  if(modo==='votacion'&&!todasEn('votacion'))return bar('La votación se abre cuando todas las mesas terminen el mapeo','votacion');
+  if(modo==='desafios'&&!todasEn('desafios'))return bar('Los desafíos se definen cuando todas las mesas cierren la votación. La votación sigue abierta.','desafios');
+  if(modo==='menus'&&entregadas()<MESAS)return bar('Esperando que todas las mesas entreguen su proyecto para abrir la evaluación','evaluacion');
+  if(modo==='menus'&&!todasEn('evaluacion'))return bar('La evaluación se abre cuando todas las mesas lleguen a esta etapa','evaluacion');
+  if(modo==='evaluacion'&&MS.some(m=>FI(faseMesa(m))>=FI('cierre')))return bar('Algunas mesas ya cerraron su evaluación. El ranking final aparece cuando cierren todas','cierre');
+  return ''
 }
 const FASE_MODO={nada:'inicio',inicio:'inicio',mapeo:'registro',votacion:'votacion',desafios:'desafios',mercado:'mercado',menus:'mercado',evaluacion:'evaluacion',cierre:'cierre'};
 const PV={};
 VISTAS.pantalla={
- mount(el){el.innerHTML=`<div class="pv"><div class="pv-top"><span class="logo" style="font-size:1.35rem"><b>EL BARRIO</b><b>DECIDE</b></span><div class="pv-prog" id="pv-prog"></div></div><div id="aviso"></div><div class="pv-body" id="pv-body"></div><div class="mstrip" id="pv-mesas"></div></div>`;this._m=null},
+ mount(el){el.innerHTML=`<div class="pv"><div class="pv-top"><span class="logo" style="font-size:1.35rem"><b>EL BARRIO</b><b>DECIDE</b></span><div class="pv-prog" id="pv-prog"></div></div><div id="aviso"></div><div id="pv-wait"></div><div class="pv-body" id="pv-body"></div><div class="mstrip" id="pv-mesas"></div></div>`;this._m=null},
  refresh(){
   const modo=modoPantalla();const fase=FASE_MODO[modo];document.body.dataset.e=FASEM[fase].e;
   $('#aviso').innerHTML=S.modo==='local'?avisoAcceso():S.modo==='error'?avisoAcceso():'';
   pintarProg(fase);pintarMesasStrip(modo);
+  const w=esperaPantalla(modo),we=$('#pv-wait');if(we.dataset.k!==w){we.dataset.k=w;we.innerHTML=w}
   const body=$('#pv-body');
-  if(modo!==this._m){const prev=this._m;this._m=modo;if(prev&&prev!=='nada'&&modo!=='nada'&&FASE_MODO[prev]!==fase)mostrarCierre(FASE_MODO[prev],fase,'Las 4 mesas');body.innerHTML='';body.dataset.k='';PV[modo].mount(body)}
+  if(modo!==this._m){const prev=this._m;this._m=modo;if(prev&&prev!=='nada'&&modo!=='nada'&&FASE_MODO[prev]!==fase)mostrarCierre(FASE_MODO[prev],fase,'Avanza el taller');body.innerHTML='';body.dataset.k='';PV[modo].mount(body)}
   if(PV[modo].update)PV[modo].update(body);
  }
 };
 function pintarProg(fase){
   const el=$('#pv-prog');const i=FI(fase);const f=FASEM[fase];const ses=sesionActual();
-  const ade=hayJornada()?MS.filter(m=>FI(faseMesa(m))>i).length:0;
-  el.innerHTML=`<div class="l"><b>Etapa ${f.n} · ${esc(f.t)}</b><span>${hayJornada()?(ade?`${ade} de ${MESAS} mesas ya avanzaron a la siguiente etapa`:esc(ses&&ses.nombre||'')):'Sin jornada activa'}</span></div><div class="pprog">${FASES.map((x,j)=>`<i class="${j<i?'done':j===i?'now':''}" style="--sc:var(--e${x.e})"></i>`).join('')}</div>`;
+  const en=hayJornada()?MS.filter(m=>FI(faseMesa(m))>=i).length:0;
+  el.innerHTML=`<div class="l"><b>Etapa ${f.n} · ${esc(f.t)}</b><span>${hayJornada()?(en<MESAS?`${en} de ${MESAS} mesas en esta etapa`:esc(ses&&ses.nombre||'')):'Sin jornada activa'}</span></div><div class="pprog">${FASES.map((x,j)=>`<i class="${j<i?'done':j===i?'now':''}" style="--sc:var(--e${x.e})"></i>`).join('')}</div>`;
 }
 function pintarMesasStrip(modo){
   const el=$('#pv-mesas');if(!hayJornada()){el.innerHTML='';return}
@@ -1757,8 +1859,9 @@ PV.mercado={
  }
 };
 PV.menus={
- mount(b){b.innerHTML=`<div class="stack" style="gap:6px"><h1>Los cuatro menús</h1><p class="sub">Las 4 mesas entregaron su proyecto. Léanlos con calma: en un momento se abre la evaluación.</p></div><div class="mesagrid dos big" id="pmn-g"></div>`},
- update(){const g=$('#pmn-g');const k=MS.map(m=>(solDe(m)||{}).ts).join();if(g.dataset.k===k)return;g.dataset.k=k;g.innerHTML=MS.map(m=>{const s=solDe(m);return s?fichaMenuHTML(s,{coins:true,cls:'pop'}):''}).join('')}
+ mount(b){b.innerHTML=`<div class="stack" style="gap:6px"><h1>Los cuatro menús</h1><p class="sub">Los proyectos de las mesas, en grande para leerlos con calma antes de evaluar.</p></div><div class="mesagrid dos big" id="pmn-g">${MS.map(m=>`<div data-m="${m}"></div>`).join('')}</div>`},
+ update(){MS.forEach(m=>{const c=$(`#pmn-g [data-m="${m}"]`);const s=solDe(m);const h=s?s.ts+s.estado:'-';if(c.dataset.h===h)return;c.dataset.h=h;
+  c.innerHTML=tieneContenido(s)?fichaMenuHTML(s,{coins:true,cls:'pop'}):`<div class="armando"><b>Mesa ${m}</b><div class="loader"><i></i><i></i><i></i></div>Armando su menú…</div>`})}
 };
 PV.evaluacion={
  mount(b){b.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-end"><div class="stack" style="gap:6px"><h1>Evaluación en vivo</h1><p class="sub">Puntaje = promedio de Atingencia, Deseabilidad, Factibilidad y Viabilidad (1 a 5). Nadie evalúa el proyecto de su propia mesa.</p></div><div class="kpi"><b id="pe-n">0</b><span>vecinos evaluaron</span></div></div><div class="mesagrid dos big" id="pe-g"></div>`},
