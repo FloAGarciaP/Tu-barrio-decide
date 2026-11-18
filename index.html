@@ -714,6 +714,25 @@ button.mesacard{border:0;font:inherit;text-align:left;cursor:pointer;min-height:
 button.mesacard:hover{filter:brightness(1.06)}
 button.mesacard[data-c] .st{background:#1E1E1E;color:#fff}
 .btn.peligro{background:var(--bad);border-color:var(--bad);color:#fff}
+/* v6.4 */
+body[data-rol="sec"][data-e="21"] #s-next{position:static;background:none;padding-bottom:0}
+body[data-rol="sec"][data-e="21"] #s-next .nextbar{box-shadow:none}
+.bank.compact{flex-direction:column;align-items:stretch;gap:8px;padding:10px 14px}
+.bk-row{display:flex;gap:8px 14px;align-items:center;flex-wrap:wrap}
+.bk-row .falta{flex:1 1 180px;opacity:.9;font-weight:600}
+.fprog{display:flex;flex-direction:column;gap:3px;min-width:120px;font-size:.82rem}
+.fprog .trk{height:6px;background:rgba(255,255,255,.25);width:140px}
+.fprog .trk b{display:block;height:100%;background:#E2B020;transition:width .3s}
+.btn.enviar{font-size:1.1rem;font-weight:900;padding:14px 26px;background:#E2B020;border:0;color:#1D1A17;box-shadow:0 0 0 3px rgba(226,176,32,.35);animation:none}
+.btn.enviar:not(:disabled){animation:latido 1.6s ease-in-out infinite}
+.btn.enviar:disabled{background:#5A5A5A;color:#BDBDBD;box-shadow:none;opacity:1}
+.btn.enviar.ok{background:var(--ok);color:#fff}
+@keyframes latido{50%{box-shadow:0 0 0 8px rgba(226,176,32,.15)}}
+.votebar{flex-wrap:wrap}
+.btn.subir{background:#fff;color:var(--accent);border:0;font-weight:900;font-size:1rem;padding:12px 20px;margin-left:auto}
+.btn.subir.listo{animation:latido 1.6s ease-in-out infinite}
+.btn.subir.ok{background:var(--ok);color:#fff}
+.btn.subir:disabled{opacity:.6}
 
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -825,15 +844,15 @@ const FASES=[
  {id:'mercado',n:'2.1',t:'Mercado de soluciones',c:'Mercado',min:30,e:'21'},
  {id:'evaluacion',n:'2.2',t:'Plenaria y evaluación 3D',c:'Evaluación',min:25,e:'22'},
  {id:'cierre',n:'3',t:'Cierre y próximos pasos',c:'Cierre',min:15,e:'3'}];
-const VERSION='Versión 6.3';
+const VERSION='Versión 6.4';
 const MENSAJE_CIERRE='Gracias por su participación. Toda la información de esta jornada se traspasará a la Municipalidad de Providencia, que evaluará cómo incorporarla.';
 const GUIA={
  inicio:{obj:'Dar la bienvenida, generar confianza en la mesa y explicar el objetivo del taller: que los vecinos logren soluciones aplicables.',mat:['Mapa de mesa','Manual de objetivos y utensilios','Tablet con el link de la mesa'],pasos:['Presenta el taller y su recorrido de 2 horas.','Explica el mapa: amarillo residencial, magenta comercial, azul vía principal y verde área verde o patrimonial.','Cuenta que todo lo que se registre aparecerá en vivo en la pantalla.','Toca «Comenzar el mapeo» al final de esta página.'],clave:'Hoy pasamos de los problemas que vivimos en el barrio a soluciones concretas.'},
  registro:{obj:'Diagnosticar los problemas cotidianos del delivery desde la experiencia real y ubicarlos en el mapa.',mat:['Set de 4 tarjetas por vecino: Soy, Quiero, Justo hoy, Me encontré con','Mapa de mesa a color','Fichas de localización'],pasos:['Armado del escenario (10 min): cada vecino elige sus 4 tarjetas y arma su situación.','Ubicación en el mapa (5 min): cada vecino pone su ficha donde ocurre el hecho.','Registro (15 min): por cada vecino, toca sus tarjetas y la zona, y revisa la redacción final del problema (con plantilla o libre). Esa frase es la que todos verán en la pantalla y en la votación.','Cuando todos hayan relatado, toca «Terminar mapeo y abrir la votación».'],clave:'La votación se abre sola cuando las 4 mesas terminan el mapeo.'},
  votacion:{obj:'Priorizar entre todas las mesas los problemas más urgentes con una votación ponderada.',mat:['QR o NFC de Votar','Celulares de los vecinos','Pantalla central'],pasos:['Muestra el QR de Votar: cada vecino entra desde su celular y elige su mesa.','Cada vecino reparte 10 votos entre los problemas de todas las mesas.','Sigue aquí cuántos vecinos de tu mesa ya votaron y cómo se ponderan los problemas.','Cuando tu mesa termine, toca «Cerrar votación y pasar a desafíos».'],clave:'Pesa más el tipo de problema con más relatos. Los 3 problemas con mayor puntaje se convierten en desafíos.'},
  desafios:{obj:'Convertir los 3 problemas más votados en Desafíos Comunales de Diseño, claros y distintos entre sí, y elegir con cuál trabajará la mesa.',mat:['Pantalla central','Tablet de la mesa'],pasos:['Lean en voz alta los 3 problemas más votados.','Redacten el desafío paso a paso (verbo y qué intervenir, personas usuarias, objetivo de mejora y actores), elijan un ejemplo o usen el buzón libre con las preguntas guía.','Presenten la redacción: la primera propuesta de cada desafío queda como oficial y cualquier mesa puede fijar una mejor.','Fijen el desafío con el que trabajará la mesa y abran el mercado.'],clave:'Cada desafío debe ser distinto de los otros y acotado: a quién beneficia, qué se interviene y qué cambio positivo buscamos.'},
- mercado:{obj:'Co-diseñar una solución integral, viable, territorializada y no punitiva con 100 tokens y los ingredientes del menú.',mat:['100 tokens (25 por vecino)','Menús e ingredientes','Talonario Proyecto de Solución'],pasos:['Mercado (10 min): reparte 25 tokens a cada vecino; negocian y juntan fondos.','Compran al menos 1 ingrediente de cada una de las 4 categorías. Las ideas propias son gratis.','Ensamblaje (20 min): en el plato describen en qué consiste el proyecto. Es lo primero que leerán los demás vecinos al evaluar.','Toca «Entregar proyecto» y luego «Abrir la evaluación».'],clave:'No se limiten a multas o sanciones: la solución debe ser integral y responder al desafío.'},
- evaluacion:{obj:'Presentar los proyectos y evaluarlos con criterios de políticas públicas reales.',mat:['QR o NFC de Evaluar','Celulares','Pantalla central'],pasos:['Cada vocero expone 2 minutos: el plato, el presupuesto invertido y dónde se aplica.','Muestra el QR de Evaluar.','Cada vecino califica de 1 a 5 los proyectos de las otras mesas; el de su propia mesa no aparece.','Cuando tu mesa termine, toca «Cerrar evaluación».'],clave:'La evaluación se abre cuando las 4 mesas entregaron su proyecto y llegaron a esta etapa.'},
+ mercado:{obj:'Co-diseñar una solución integral, viable, territorializada y no punitiva con 100 tokens y los ingredientes del menú.',mat:['100 tokens (25 por vecino)','Menús e ingredientes','Talonario Proyecto de Solución'],pasos:['Mercado (10 min): reparte 25 tokens a cada vecino; negocian y juntan fondos.','Compran al menos 1 ingrediente de cada una de las 4 categorías. Las ideas propias son gratis.','Ensamblaje (20 min): en el plato describen en qué consiste el proyecto. Es lo primero que leerán los demás vecinos al evaluar.','Completen toda la ficha, toquen «Enviar solución» y luego «Abrir la evaluación».'],clave:'No se limiten a multas o sanciones: la solución debe ser integral y responder al desafío.'},
+ evaluacion:{obj:'Presentar los proyectos y evaluarlos con criterios de políticas públicas reales.',mat:['QR o NFC de Evaluar','Celulares','Pantalla central'],pasos:['Cada vocero expone 2 minutos: el plato, el presupuesto invertido y dónde se aplica.','Muestra el QR de Evaluar.','Cada vecino califica de 1 a 5 todos los proyectos. Se muestran sin el número de mesa.','Cuando tu mesa termine, toca «Cerrar evaluación».'],clave:'La evaluación se abre cuando las 4 mesas entregaron su proyecto y llegaron a esta etapa.'},
  cierre:{obj:'Mostrar el ranking y agradecer la participación.',mat:['Pantalla central','Talonario firmado','Kit de la mesa'],pasos:['Muestra el ranking en la pantalla.','Mensaje de cierre: gracias por participar; los datos se traspasarán a la Municipalidad de Providencia, que evaluará cómo incorporarlos.','Reúne el kit de la mesa y despide a los vecinos.'],clave:MENSAJE_CIERRE}};
 /* índices */
 const SOYM=Object.fromEntries(SOY.map(([id,n,f])=>[id,{id,n,f}]));
@@ -1126,7 +1145,7 @@ function guiaHTML(fase,abierta){
 function leyendaZonas(){return `<div class="legend">${ZONAS.map(z=>`<div class="it" style="--zc:var(--z-${z.id})"><i class="sw" style="background:var(--z-${z.id})"></i><div><b>${z.n}</b><div class="small muted">${z.d}</div></div></div>`).join('')}</div>`}
 const QUIEN={inicio:['Secretario'],registro:['Secretario','Pantalla'],votacion:['Vecinos en su celular','Las 4 mesas juntas'],desafios:['Secretario','Las 4 mesas juntas'],mercado:['Secretario','Pantalla'],evaluacion:['Vecinos en su celular','Las 4 mesas juntas'],cierre:['Pantalla']};
 function indicacionesHTML(){
-  return `<div class="reglas"><div>Cada secretario avanza su mesa con el botón que aparece al final de cada etapa.</div><div>La votación y la evaluación se abren solas cuando las 4 mesas llegan a esa etapa.</div><div>La pantalla central cambia sola: muestra lo que van subiendo las mesas.</div><div>Los vecinos votan y evalúan desde su celular con el QR. No se evalúa el proyecto de la propia mesa.</div></div>
+  return `<div class="reglas"><div>Cada secretario avanza su mesa con el botón que aparece al final de cada etapa.</div><div>La votación y la evaluación se abren solas cuando las 4 mesas llegan a esa etapa.</div><div>La pantalla central cambia sola: muestra lo que van subiendo las mesas.</div><div>Los vecinos votan y evalúan desde su celular con el QR. Los proyectos se evalúan sin el número de mesa.</div></div>
    <div class="indic">${FASES.map(f=>`<div class="it" style="--sc:var(--e${f.e})"><span class="n">${f.n}</span><div><b>${esc(f.t)}</b> <span class="small muted">· ${dur(f.id)} min</span><div class="small" style="font-weight:500">${esc(GUIA[f.id].obj)}</div><div class="who">${(QUIEN[f.id]||[]).map(w=>`<span>${w}</span>`).join('')}</div></div></div>`).join('')}</div>`
 }
 function coinsArr(s){const a=[];MENU.forEach(c=>(s.compras||[]).filter(id=>(ING[id]||{}).cat===c.id).forEach(id=>{for(let k=0;k<Math.round(ING[id].p/5);k++)a.push(c.c)}));return a}
@@ -1138,7 +1157,7 @@ function fichaMenuHTML(s,o={}){
   const bl=(k,v)=>v&&String(v).trim()?`<div class="bloq"><b>${k}</b>${esc(v)}</div>`:'';
   return `<article class="menucard ${o.cls||''}" data-mesa="${esc(s.mesa)}" style="--dcol:var(--d${(i??0)+1})">
    ${o.des!==false&&d?`<div class="mc-des"><b>Responde al Desafío N°${i+1}</b>${esc(d.texto)}</div>`:''}
-   <header><span class="mc-mesa">Mesa ${esc(s.mesa)}${s.lugar?' · '+esc(s.lugar):''}${s.ejemplo?' · Ejemplo':''}${s.estado==='lista'?' · Entregado':''}</span><h3>${esc(nombreProyecto(s))}</h3></header>
+   <header><span class="mc-mesa">${o.anon?'':'Mesa '+esc(s.mesa)+(s.lugar?' · ':'')}${s.lugar?esc(s.lugar):''}${s.ejemplo?' · Ejemplo':''}${!o.anon&&s.estado==='lista'?' · Enviado':''}</span><h3>${esc(o.anon&&!String(s.nombre||'').trim()?'Proyecto sin nombre':nombreProyecto(s))}</h3></header>
    <p class="mc-bajada">${String(s.plato||'').trim()?esc(s.plato):'<span class="muted">Aún sin descripción del proyecto.</span>'}</p>
    ${o.score?'<div class="mc-score"><span class="rk1">–</span><span class="pts"><span class="v">–</span><small class="k"></small></span><div class="critbars">'+CRITERIOS.map(([k,n])=>`<div>${n.slice(0,5)}. <span data-cv="${k}">–</span><div class="trk"><b data-cb="${k}" style="width:0"></b></div></div>`).join('')+'</div></div>':''}
    <div class="mc-secs">${secs}</div>
@@ -1219,7 +1238,7 @@ VISTAS.inicio={
    <details class="guia emergencia" id="i-em"><summary>Comandos de emergencia del moderador</summary><div class="guiabody" id="i-emb"></div></details>
    <section class="grid g2" style="align-items:start">
     <div class="panel plain stack">${qrBloque('votar','Vecinos · Votar','Etapa 1.2. Cada vecino reparte 10 votos desde su celular.')}</div>
-    <div class="panel plain stack">${qrBloque('evaluar','Vecinos · Evaluar','Etapa 2.2. Cada vecino evalúa los proyectos de las otras mesas.')}</div>
+    <div class="panel plain stack">${qrBloque('evaluar','Vecinos · Evaluar','Etapa 2.2. Cada vecino evalúa todos los proyectos, sin ver de qué mesa son.')}</div>
    </section>
    <section class="panel plain stack"><div class="row" style="justify-content:space-between"><h2>Indicaciones generales</h2><a class="btn sm" href="#pantalla" target="_blank" rel="noopener">Abrir la pantalla central ↗</a></div>${indicacionesHTML()}<h3>Cómo leer el mapa</h3>${leyendaZonas()}</section>
    <p class="small muted">¿Necesitas iniciar la jornada o resolver un problema? Entra a <a href="#admin">Administración</a>. · ${VERSION}</p>
@@ -1318,36 +1337,43 @@ VISTAS.admin={
 };
 
 /* ---------- SECRETARIO: elegir la mesa una sola vez ---------- */
-const mesaFija=()=>{const v=LS.get('bd.mesa',null);return MS.includes(+v)?+v:null};
+/* la tablet queda fija en una mesa solo dentro de la jornada actual; el administrador puede abrir cualquier mesa */
+const mesaFija=()=>{if(!hayJornada())return null;const v=LS.get('bd.mesa',null);return MS.includes(+v)&&LS.get('bd.mesaTid',null)===S.estado.tid?+v:null};
+const fijarMesa=m=>{LS.set('bd.mesa',m);LS.set('bd.mesaTid',S.estado.tid)};
+const esAdminDisp=()=>!!LS.get('bd.fac',false);
 VISTAS.secretario={
- mount(el){
-  const f=mesaFija();
-  el.innerHTML=`<div class="narrow stack" style="gap:20px"><div class="stack" style="gap:6px"><span class="etapa" style="--accent:var(--e0)">Secretario</span><h1>${f?'Esta tablet es de la Mesa '+f:'¿Desde qué mesa vas a registrar?'}</h1>
-   <p class="muted" style="font-weight:500">${f?'Todo lo que registres en esta tablet queda a nombre de esa mesa.':'Elige tu mesa una sola vez. Después esta tablet queda fija para esa mesa y no se puede cambiar sin la clave de administración.'}</p></div>
-   ${f?`<a class="btn primary" href="#mesa${f}" style="align-self:flex-start;--accent:var(--e0)">Continuar en la Mesa ${f} →</a>`:`<div class="mesacards">${MS.map(m=>`<button class="mesacard mc${m} selmesa" data-m="${m}" type="button"><h3>Mesa ${m}</h3><span class="st">Elegir esta mesa</span></button>`).join('')}</div><p class="small" id="sm-c" hidden></p>`}</div>`;
-  el.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const m=+b.dataset.m;if(b.dataset.c){LS.set('bd.mesa',m);location.hash='mesa'+m;return}el.querySelectorAll('[data-m]').forEach(x=>{delete x.dataset.c;x.querySelector('.st').textContent='Elegir esta mesa'});b.dataset.c=1;b.querySelector('.st').textContent='Toca de nuevo para confirmar la Mesa '+m});
+ mount(el){el.innerHTML='<div id="sm"></div>';this._k=null},
+ refresh(){
+  const f=mesaFija(),adm=esAdminDisp();const k=[f,S.estado.tid,adm].join('|');if(this._k===k)return;this._k=k;const el=$('#sm');
+  el.innerHTML=`<div class="narrow stack" style="gap:20px"><div class="stack" style="gap:6px"><span class="etapa" style="--accent:var(--e0)">Secretario</span><h1>${f&&!adm?'Esta tablet es de la Mesa '+f:'¿Desde qué mesa vas a registrar?'}</h1>
+   <p class="muted" style="font-weight:500">${adm?'Este dispositivo está en modo administración: puedes abrir cualquier mesa para probar, sin que quede fijo.':f?'Todo lo que registres en esta tablet queda a nombre de esa mesa durante esta jornada.':'Elige tu mesa. Durante esta jornada la tablet queda fija para esa mesa; en una jornada nueva se vuelve a elegir.'}</p></div>
+   ${f&&!adm?`<a class="btn primary" href="#mesa${f}" style="align-self:flex-start;--accent:var(--e0)">Continuar en la Mesa ${f} →</a>`:`<div class="mesacards">${MS.map(m=>`<button class="mesacard mc${m} selmesa" data-m="${m}" type="button"><h3>Mesa ${m}</h3><span class="st">${adm?'Abrir esta mesa':'Elegir esta mesa'}</span></button>`).join('')}</div>`}</div>`;
+  el.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const m=+b.dataset.m;if(adm||b.dataset.c){if(!adm&&hayJornada())fijarMesa(m);location.hash='mesa'+m;return}el.querySelectorAll('[data-m]').forEach(x=>{delete x.dataset.c;x.querySelector('.st').textContent='Elegir esta mesa'});b.dataset.c=1;b.querySelector('.st').textContent='Toca de nuevo para confirmar la Mesa '+m});
  }
 };
 function bloqueoMesa(el,fija,pedida){
   el.innerHTML=`<div class="narrow stack" style="gap:16px"><div class="notice"><b>Esta tablet está registrando la Mesa ${fija}.</b> Para no mezclar los registros, no se puede abrir otra mesa desde aquí.</div>
    <a class="btn primary" href="#mesa${fija}" style="align-self:flex-start">Volver a la Mesa ${fija}</a>
    <details class="guia"><summary>Cambiar esta tablet a la Mesa ${pedida}</summary><div class="guiabody"><p>Solo si esta tablet cambió de mesa. Requiere la clave de administración.</p><form class="row" id="cm-f" novalidate><input type="password" id="cm-pin" aria-label="Clave" style="flex:0 1 220px"><button class="btn sm" type="submit">Cambiar a la Mesa ${pedida}</button><span class="small" id="cm-err" style="color:var(--bad);font-weight:700" hidden>Clave incorrecta</span></form></div></details></div>`;
-  $('#cm-f').onsubmit=e=>{e.preventDefault();if($('#cm-pin').value===CLAVE_FACILITADOR){LS.set('bd.mesa',pedida);mount()}else $('#cm-err').hidden=false};
+  $('#cm-f').onsubmit=e=>{e.preventDefault();if($('#cm-pin').value===CLAVE_FACILITADOR){fijarMesa(pedida);mount()}else $('#cm-err').hidden=false};
 }
 
 /* ---------- SECRETARIO DE MESA ---------- */
 const TITULOS={inicio:'Bienvenida a la mesa',registro:'Registro de relatos',votacion:'Así se ponderan los problemas',desafios:'De problema a desafío',mercado:'Mercado de soluciones',evaluacion:'Evaluación de proyectos',cierre:'Cierre'};
 const SEC={};let secM=1,secFase=null;
 VISTAS.mesa={
- mount(el,R){secFase=null;const fija=mesaFija();
-  if(fija&&fija!==R.mesa){secM=null;bloqueoMesa(el,fija,R.mesa);return}
-  secM=R.mesa;LS.set('bd.mesa',secM);
+ mount(el,R){secFase=null;this._R=R;this._bloq=false;secM=R.mesa;
   el.innerHTML=`<div class="stack sec"><div id="aviso"></div><div id="s-head" class="stack" style="gap:12px"></div><div id="s-body" class="stack"></div><div id="s-next"></div>
    <details class="guia" id="s-ind"><summary>Indicaciones generales del taller</summary><div class="guiabody">${indicacionesHTML()}<h4>Mapa</h4>${leyendaZonas()}</div></details>
    <details class="guia"><summary>¿Algo salió mal?</summary><div class="guiabody"><p>Si la mesa avanzó por error, puedes volver a la etapa anterior. Si otra mesa se atrasó o algo falla, usa los <a href="#inicio">comandos de emergencia en Inicio</a>.</p><button class="btn sm ghost" id="s-back" style="align-self:flex-start">← Volver a la etapa anterior</button></div></details></div>`;
   $('#s-back').onclick=()=>{const i=FI(faseMesa(secM));if(i>0)moverMesa(secM,FASES[i-1].id)};
  },
  refresh(){
+  const R=this._R;if(!R)return;
+  if(hayJornada()&&!esAdminDisp()){const fija=mesaFija();
+   if(fija&&fija!==R.mesa){if(!this._bloq){this._bloq=true;secM=null;bloqueoMesa($('#app'),fija,R.mesa)}return}
+   if(!fija)fijarMesa(R.mesa)}
+  if(this._bloq){mount();return}
   const m=secM;if(!m)return;
   if(!hayJornada()){$('#aviso').innerHTML=sinJornada();$('#s-head').innerHTML='';$('#s-body').innerHTML='';$('#s-next').innerHTML='';secFase=null;return}
   $('#aviso').innerHTML=avisoAcceso();
@@ -1366,7 +1392,7 @@ function nextCfg(m,f){
    case 'registro':{const n=S.data.problemas.filter(p=>+p.mesa===m).length;return {t:'Terminar mapeo y abrir la votación',d:n?`${n} relato${n>1?'s':''} registrado${n>1?'s':''}. La votación empieza cuando las ${MESAS} mesas terminen el mapeo.`:'Aún no hay relatos de esta mesa. Puedes pasar igual.',to:'votacion',conf:true}}
    case 'votacion':return todasEn('votacion')?{t:'Cerrar votación y pasar a desafíos',d:'Cuando los vecinos de tu mesa hayan votado. Los desafíos se definen cuando las 4 mesas cierran la votación.',to:'desafios',conf:true}:{t:'Cerrar votación y pasar a desafíos',d:`La votación aún no comienza: falta${faltanEn('votacion').length>1?'n':''} ${mesasTxt(faltanEn('votacion'))}. El moderador puede abrirla para todas desde los comandos de emergencia en Inicio.`,dis:true};
    case 'desafios':{const i=desafioDeMesa(m);const ok=i!=null&&desOf(i);return {t:'Abrir el mercado de soluciones',d:ok?`Trabajarán el Desafío N°${i+1}.`:'Primero fijen el desafío con el que trabajará la mesa (paso 4).',to:'mercado',dis:!ok}}
-   case 'mercado':{const s=solDe(m);const ok=s&&s.estado==='lista';return {t:'Abrir la evaluación',d:ok?'La evaluación empieza cuando las 4 mesas lleguen a esta etapa.':'El proyecto aún no se entrega: al pasar, se entrega como está.',to:'evaluacion',conf:true,antes:ok?null:async()=>{const s=solDe(m);if(s)await put('soluciones','mesa-'+m,{...s,id:undefined,estado:'lista',ts:Date.now()})}}}
+      case 'mercado':{const s=solDe(m);const ok=s&&s.estado==='lista'&&fichaFaltan(s).length===0;return {t:'Abrir la evaluación',d:ok?'Solución enviada. La evaluación empieza cuando las 4 mesas lleguen a esta etapa.':'Primero completen toda la ficha y toquen «Enviar solución».',to:'evaluacion',dis:!ok,conf:true}}
    case 'evaluacion':return todasEn('evaluacion')?{t:'Cerrar evaluación y pasar al cierre',d:'Cuando los vecinos de tu mesa hayan evaluado.',to:'cierre',conf:true}:{t:'Cerrar evaluación y pasar al cierre',d:`La evaluación aún no comienza: falta${faltanEn('evaluacion').length>1?'n':''} ${mesasTxt(faltanEn('evaluacion'))}. El moderador puede abrirla para todas desde los comandos de emergencia en Inicio.`,dis:true};
    default:return null
   }
@@ -1625,22 +1651,28 @@ function cambioSol(){solDirty=true;if(solLocal.estado==='lista')solLocal.estado=
 function pintarBanco(){
   pintarSlots();const b=$('#m-bank');if(!b||!solLocal)return;
   const t=tokensDe(solLocal),over=t>PRESUPUESTO,cats=catsCubiertas(solLocal);
-  const lleno=k=>String(solLocal[k]||'').trim().length>0;
-  const faltan=[...MENU.filter(c=>!cats.includes(c.id)).map(c=>c.tag),...[['plato','Plato'],['texto','Receta'],['cambio','Cambio esperado']].filter(([k])=>!lleno(k)).map(x=>x[1])];
-  b.innerHTML=`<span class="tot" style="${over?'color:#FF9C8A':''}">${t}/${PRESUPUESTO}</span>${coinsHTML(solLocal)}
-   <div class="checks">${MENU.map(c=>`<span class="${cats.includes(c.id)?'ok':''}" style="${cats.includes(c.id)?`background:var(${c.c})`:''}">${esc(c.tag)}</span>`).join('')}</div>
-   <span class="small" style="opacity:.85;flex:1 1 140px">${solLocal.estado==='lista'?'Entregado.':over?`Se pasaron por ${t-PRESUPUESTO}.`:faltan.length?'Falta: '+faltan.join(', '):'Listo para entregar.'}</span>
-   <button class="btn primary sm" id="m-entregar" style="--accent:#E2B020;color:#1D1A17" ${over||!solLocal.compras.length?'disabled':''}>${solLocal.estado==='lista'?'Entregado ✓':'Entregar proyecto'}</button>`;
+  const F=fichaCampos(solLocal),hechos=F.filter(x=>x[2]).length,faltan=F.filter(x=>!x[2]).map(x=>x[1]);
+  const listo=!faltan.length&&!over,env=solLocal.estado==='lista';
+  b.innerHTML=`<div class="bk-row"><span class="tot" style="${over?'color:#FF9C8A':''}">${t}/${PRESUPUESTO} tokens</span>${coinsHTML(solLocal)}
+    <div class="checks">${MENU.map(c=>`<span class="${cats.includes(c.id)?'ok':''}" style="${cats.includes(c.id)?`background:var(${c.c})`:''}">${esc(c.tag)}</span>`).join('')}</div></div>
+   <div class="bk-row"><div class="fprog"><span>Ficha <b>${hechos}/${F.length}</b></span><div class="trk"><b style="width:${hechos/F.length*100}%"></b></div></div>
+    <span class="small falta">${env?'Solución enviada ✓ Si cambian algo, deben enviarla de nuevo.':over?`Se pasaron por ${t-PRESUPUESTO} tokens.`:faltan.length?'Falta: '+faltan.join(', '):'Ficha completa. ¡Ya pueden enviar la solución!'}</span>
+    <button class="btn enviar ${env?'ok':''}" id="m-entregar" ${env||!listo?'disabled':''}>${env?'Solución enviada ✓':'Enviar solución'}</button></div>`;
   $('#m-entregar').onclick=async()=>{
-   if(solLocal.estado==='lista')return;
-   if(faltan.length&&!$('#m-entregar').dataset.conf){$('#m-entregar').dataset.conf=1;$('#m-entregar').textContent='Falta algo: entregar igual';toast('Falta: '+faltan.join(', '));return}
-   solDirty=true;solLocal.estado='lista';const ok=await guardar(()=>put('soluciones','mesa-'+solMesa,{...solLocal,mesa:solMesa,ts:Date.now()}),'Proyecto entregado');if(ok){solDirty=false;pintarBanco()}
+   if(env||!listo)return;
+   solDirty=true;solLocal.estado='lista';const ok=await guardar(()=>put('soluciones','mesa-'+solMesa,{...solLocal,mesa:solMesa,ts:Date.now()}),'¡Solución enviada!');if(ok){solDirty=false;pintarBanco()}
   };
 }
+/* todo lo que debe tener la ficha antes de enviarla (la foto es opcional) */
+function fichaCampos(s){
+  const ll=k=>String(s[k]||'').trim().length>0;const cats=catsCubiertas(s);
+  return [['nombre','Nombre',ll('nombre')],['lugar','Lugar',ll('lugar')],...MENU.map(c=>['c-'+c.id,c.tag,cats.includes(c.id)]),['plato','Plato',ll('plato')],['texto','Cómo funcionan juntos',ll('texto')],['porque','Qué resuelven',ll('porque')],['falla','Qué podría fallar',ll('falla')],['responsables','Quién hace qué',ll('responsables')],['zonas','Dónde se implementa',(s.zonas||[]).length>0],['cambio','Cambio esperado',ll('cambio')]]
+}
+const fichaFaltan=s=>fichaCampos(s).filter(x=>!x[2]).map(x=>x[1]);
 
 /* 2.2 · evaluación: el secretario ve cuántos evaluaron */
 SEC.evaluacion={
- mount(b,m){b.innerHTML=`<div id="se-wait"></div><div class="grid g2" style="align-items:start"><section class="panel stack"><h2>Evaluaciones</h2><div class="kpis" id="se-k"></div>${qrBloque('evaluar','Muestra este QR a los vecinos','Cada vecino entra desde su celular, elige la Mesa '+m+' y evalúa los proyectos de las otras mesas.')}</section><section class="stack"><h2>Proyecto de la Mesa ${m}</h2><div id="se-p"></div></section></div><section class="panel stack"><h2>Así va la evaluación</h2><div class="mini" id="se-r"></div></section>`},
+ mount(b,m){b.innerHTML=`<div id="se-wait"></div><div class="grid g2" style="align-items:start"><section class="panel stack"><h2>Evaluaciones</h2><div class="kpis" id="se-k"></div>${qrBloque('evaluar','Muestra este QR a los vecinos','Cada vecino entra desde su celular, elige la Mesa '+m+' y evalúa todos los proyectos.')}</section><section class="stack"><h2>Proyecto de la Mesa ${m}</h2><div id="se-p"></div></section></div><section class="panel stack"><h2>Así va la evaluación</h2><div class="mini" id="se-r"></div></section>`},
  refresh(m){
   $('#se-wait').innerHTML=todasEn('evaluacion')?'':esperaMesas('evaluacion','La evaluación aún no comienza','Se abre en los celulares cuando las 4 mesas entreguen su proyecto y lleguen a esta etapa. Aprovechen para que el vocero ensaye.');
   const E=evaluadores();$('#se-k').innerHTML=`<div class="kpi"><b>${E.porMesa[m]||0}</b><span>vecinos de la Mesa ${m} evaluaron</span></div><div class="kpi"><b>${E.total}</b><span>vecinos en total</span></div>`;
@@ -1664,11 +1696,13 @@ function mesaPart(el,onSel){
   el.innerHTML=`<fieldset class="panel stack"><legend>¿En qué mesa estás sentado?</legend><div class="mesas">${MS.map(i=>`<label class="mesa"><input type="radio" name="pm" value="${i}"><span><b>${i}</b>Mesa</span></label>`).join('')}</div></fieldset>`;
   el.querySelectorAll('input[name=pm]').forEach(r=>r.onchange=()=>{LS.set('bd.pmesa',+r.value);onSel()});return null
 }
-const guardarVoto=debounce(async()=>{if(!borradorVoto)return;await guardar(()=>put('votos',voterId(),{asignacion:borradorVoto,mesa:pMesa(),ts:Date.now()}))},500);
+const guardarVoto=()=>{};
+const votoSubido=()=>{const v=S.data.votos.find(x=>x.id===voterId());return v&&v.asignacion||null};
+const mismoVoto=(a,b)=>{const k=o=>JSON.stringify(Object.entries(o||{}).filter(([,n])=>n>0).sort());return k(a)===k(b)};
 VISTAS.votar={
  mount(el){el.innerHTML=`<div class="narrow stack part"><div class="stack" style="gap:6px"><span class="etapa">Etapa 1.2 · Votación</span><h1>¿Qué problema es más urgente?</h1>
    <p class="muted" style="font-weight:500">Estos son los problemas que levantaron las ${MESAS} mesas. Tienes <b>${VOTOS_MAX} votos</b>: dalos a distintos problemas o varios a uno.</p></div>
-   <div id="aviso"></div><div id="pm"></div><div id="v-body" class="stack"></div></div>`;this._k=null},
+   <div id="aviso"></div><div id="pm"></div><div id="v-body" class="stack"></div></div>`;this._k=null;this._sub=null},
  refresh(){
   const body=$('#v-body');
   if(!hayJornada()){$('#aviso').innerHTML='';$('#pm').innerHTML='';body.innerHTML=sinJornada();this._k=null;return}
@@ -1685,10 +1719,13 @@ VISTAS.votar={
    OBST.forEach(c=>{const gs=C.lista.filter(g=>g.cat===c.id).sort((a,b)=>a.mesa-b.mesa||(a.p.ts||0)-(b.p.ts||0));if(!gs.length)return;
     html+=`<div class="stack" style="gap:4px;margin-top:8px"><div class="row" style="justify-content:space-between"><h3>${esc(c.n)}</h3><span class="wchip" style="--wc:var(${c.c})">Cada voto vale ×${fmt(C.peso[c.id])}</span></div><p class="small muted">${C.cnt[c.id]} de ${C.N} relatos son de este tipo.</p></div>`;
     gs.forEach(g=>{html+=probHTML(g.p,`<div class="row" style="justify-content:flex-end"><div class="stepper"><button type="button" data-m="${g.id}" aria-label="Quitar voto">−</button><span class="n" data-n="${g.id}">0</span><button type="button" data-p="${g.id}" aria-label="Dar voto">+</button></div></div>`)})});
-   html+=`<div class="votebar"><div><b id="vb-t"></b><div class="small" style="opacity:.9">Tus votos se guardan solos y se ven en la pantalla</div></div><div class="dots" id="vb-d"></div></div>${botonSiguiente()}`;
+   html+=`<div class="votebar"><div><b id="vb-t"></b><div class="small" id="vb-s" style="opacity:.9"></div><div class="dots" id="vb-d" style="margin-top:6px"></div></div><button class="btn subir" type="button" id="vb-up">Subir votación</button></div>${botonSiguiente()}`;
    body.innerHTML=C.lista.length?html:'<div class="empty">Todavía no hay problemas registrados.</div>';
    body.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{const u=Object.values(borradorVoto).reduce((a,x)=>a+x,0);if(u<VOTOS_MAX){borradorVoto[b.dataset.p]=(borradorVoto[b.dataset.p]||0)+1;guardarVoto();this.pinta()}});
    body.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const kk=b.dataset.m;borradorVoto[kk]=Math.max(0,(borradorVoto[kk]||0)-1);if(!borradorVoto[kk])delete borradorVoto[kk];guardarVoto();this.pinta()});
+   const up=$('#vb-up');if(up)up.onclick=async()=>{const u=Object.values(borradorVoto).reduce((a,x)=>a+x,0);if(!u)return;
+    if(u<VOTOS_MAX&&!up.dataset.c){up.dataset.c=1;up.textContent=`Te quedan ${VOTOS_MAX-u}: subir igual`;return}delete up.dataset.c;up.disabled=true;up.textContent='Subiendo…';
+    const ok=await guardar(()=>put('votos',voterId(),{asignacion:{...borradorVoto},mesa:pMesa(),ts:Date.now()}),'¡Votación subida!');if(ok){this._sub={...borradorVoto}}this.pinta()};
    bindSig()}
   this.pinta();
  },
@@ -1699,14 +1736,17 @@ VISTAS.votar={
   body.querySelectorAll('[data-n]').forEach(n=>{const v=borradorVoto[n.dataset.n]||0;n.textContent=v;n.closest('.prob').classList.toggle('mine',v>0)});
   body.querySelectorAll('[data-m]').forEach(b=>b.disabled=!borradorVoto[b.dataset.m]);
   body.querySelectorAll('[data-p]').forEach(b=>b.disabled=!lib);
-  const t=$('#vb-t');if(t)t.textContent=lib?`Te quedan ${lib} voto${lib>1?'s':''}`:'Votos completos. ¡Gracias!';
+  const sub=this._sub||votoSubido();const ok=u>0&&sub&&mismoVoto(sub,borradorVoto);
+  const t=$('#vb-t');if(t)t.textContent=ok?'¡Votación subida! Gracias':lib?`Te quedan ${lib} voto${lib>1?'s':''}`:'Usaste tus 10 votos';
+  const s=$('#vb-s');if(s)s.textContent=ok?'Si cambias algún voto, vuelve a subirla.':sub&&u>0?'Cambiaste tus votos: súbelos de nuevo para que cuenten.':'Tus votos cuentan cuando tocas «Subir votación».';
+  const up=$('#vb-up');if(up&&!up.dataset.c){up.disabled=!u||ok;up.classList.toggle('ok',ok);up.classList.toggle('listo',!ok&&lib===0);up.textContent=ok?'Votación subida ✓':sub?'Subir cambios':'Subir votación'}
   const d=$('#vb-d');if(d)d.innerHTML=Array.from({length:VOTOS_MAX},(_,i)=>`<i class="${i<u?'on':''}"></i>`).join('');
  }
 };
 const guardarEval=debounce(async()=>{if(!borradorEval)return;await guardar(()=>put('evaluaciones',voterId(),{notas:borradorEval.notas,mesa:pMesa(),ts:Date.now()}))},500);
 VISTAS.evaluar={
  mount(el){el.innerHTML=`<div class="narrow stack part"><div class="stack" style="gap:6px"><span class="etapa">Etapa 2.2 · Evaluación</span><h1>Evalúa los proyectos</h1>
-   <p class="muted" style="font-weight:500">Califica de 1 a 5 los proyectos de las otras mesas. El de tu mesa no aparece. Se guarda solo.</p></div><div id="aviso"></div><div id="pm"></div>
+   <p class="muted" style="font-weight:500">Califica de 1 a 5 cada proyecto. Se guarda solo.</p></div><div id="aviso"></div><div id="pm"></div>
    <details class="guia"><summary>Qué significa cada criterio</summary><div class="guiabody">${CRITERIOS.map(([k,n,d])=>`<p><b>${n}:</b> ${d}</p>`).join('')}</div></details>
    <div id="e-body" class="stack"></div></div>`;this._k=null},
  refresh(){
@@ -1719,16 +1759,16 @@ VISTAS.evaluar={
   if(todasEn('cierre')){this._k=null;body.innerHTML=`<div class="gracias"><h2>¡Gracias!</h2><p>${esc(MENSAJE_CIERRE)}</p></div>`;return}
   const id=voterId();
   if(!borradorEval){const mio=S.data.evaluaciones.find(e=>e.id===id);borradorEval={notas:mio?JSON.parse(JSON.stringify(mio.notas||{})):{}}}
-  const sols=S.data.soluciones.filter(s=>tieneContenido(s)&&+s.mesa!==m).sort((a,b)=>a.mesa-b.mesa);
+  const hs=x=>{let h=0;for(const ch of voterId()+x)h=(h*31+ch.charCodeAt(0))|0;return h};const sols=S.data.soluciones.filter(tieneContenido).sort((a,b)=>hs(a.id)-hs(b.id));
   const dis=new Set(sols.map(s=>desafioDeMesa(+s.mesa))).size>1;
   const k=m+'|'+sols.map(s=>s.id+s.ts).join()+dis+top3().map((_,i)=>(desOf(i)||{}).texto).join();
   if(this._k!==k){this._k=k;
    const d0=desafioDeMesa(sols[0]&&+sols[0].mesa);
    body.innerHTML=`<p class="small" style="font-weight:700" id="e-n"></p>${!dis&&d0!=null&&desOf(d0)?`<div class="reto" style="--accent:var(--d${d0+1})"><span class="small" style="font-weight:800;color:var(--d${d0+1})">TODOS RESPONDEN AL DESAFÍO N°${d0+1}</span><p style="font-weight:700">${esc(desOf(d0).texto)}</p></div>`:''}
     ${sols.length?sols.map(s=>{const di=desafioDeMesa(+s.mesa);const d=di!=null?desOf(di):null;return `<article class="evalcard" data-sol="${s.id}" style="--dcol:var(--d${(di??0)+1})">${dis&&d?`<div class="des"><b>Responde al Desafío N°${di+1}</b>${esc(d.texto)}</div>`:''}
-     <span class="mc-mesa">Mesa ${s.mesa}</span><h3>${esc(nombreProyecto(s))}</h3><p class="baj">${esc(s.plato||'Sin descripción.')}</p>
-     <button class="btn sm ghost" type="button" data-fic="${s.id}" aria-expanded="false" style="align-self:flex-start">Ver ficha completa</button><div data-ficha="${s.id}" hidden>${fichaMenuHTML(s,{full:true,des:false})}</div>
-     <div class="stack" style="gap:10px;border-top:1.5px dashed var(--dash);padding-top:12px">${CRITERIOS.map(([kk,t,dd])=>`<div class="crit"><span class="l">${t} <small>· ${dd}</small></span><div class="scale" role="group" aria-label="${t}">${[1,2,3,4,5].map(x=>`<button type="button" data-s="${s.id}" data-k="${kk}" data-x="${x}">${x}</button>`).join('')}</div></div>`).join('')}</div></article>`}).join(''):'<div class="empty">Aún no hay proyectos de otras mesas para evaluar.</div>'}${botonSiguiente()}`;
+     <h3>${esc(nombreProyecto(s))}</h3><p class="baj">${esc(s.plato||'Sin descripción.')}</p>
+     <button class="btn sm ghost" type="button" data-fic="${s.id}" aria-expanded="false" style="align-self:flex-start">Ver ficha completa</button><div data-ficha="${s.id}" hidden>${fichaMenuHTML(s,{full:true,des:false,anon:true})}</div>
+     <div class="stack" style="gap:10px;border-top:1.5px dashed var(--dash);padding-top:12px">${CRITERIOS.map(([kk,t,dd])=>`<div class="crit"><span class="l">${t} <small>· ${dd}</small></span><div class="scale" role="group" aria-label="${t}">${[1,2,3,4,5].map(x=>`<button type="button" data-s="${s.id}" data-k="${kk}" data-x="${x}">${x}</button>`).join('')}</div></div>`).join('')}</div></article>`}).join(''):'<div class="empty">Aún no hay proyectos para evaluar.</div>'}${botonSiguiente()}`;
    body.querySelectorAll('[data-fic]').forEach(b=>b.onclick=()=>{const f=body.querySelector(`[data-ficha="${b.dataset.fic}"]`);f.hidden=!f.hidden;b.setAttribute('aria-expanded',!f.hidden);b.textContent=f.hidden?'Ver ficha completa':'Ocultar ficha'});
    body.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{const n=borradorEval.notas[b.dataset.s]||(borradorEval.notas[b.dataset.s]={});n[b.dataset.k]=+b.dataset.x;guardarEval();this.pinta()});
    bindSig()}
@@ -1870,13 +1910,13 @@ PV.mercado={
 PV.menus={
  mount(b){b.innerHTML=`<div class="stack" style="gap:6px"><h1>Los cuatro menús</h1><p class="sub">Los proyectos de las mesas, en grande para leerlos con calma antes de evaluar.</p></div><div class="mesagrid dos big" id="pmn-g">${MS.map(m=>`<div data-m="${m}"></div>`).join('')}</div>`},
  update(){MS.forEach(m=>{const c=$(`#pmn-g [data-m="${m}"]`);const s=solDe(m);const h=s?s.ts+s.estado:'-';if(c.dataset.h===h)return;c.dataset.h=h;
-  c.innerHTML=tieneContenido(s)?fichaMenuHTML(s,{coins:true,cls:'pop'}):`<div class="armando"><b>Mesa ${m}</b><div class="loader"><i></i><i></i><i></i></div>Armando su menú…</div>`})}
+  c.innerHTML=tieneContenido(s)?fichaMenuHTML(s,{coins:true,cls:'pop',anon:true}):`<div class="armando"><b>Proyecto en preparación</b><div class="loader"><i></i><i></i><i></i></div>Armando su menú…</div>`})}
 };
 PV.evaluacion={
- mount(b){b.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-end"><div class="stack" style="gap:6px"><h1>Evaluación en vivo</h1><p class="sub">Puntaje = promedio de Atingencia, Deseabilidad, Factibilidad y Viabilidad (1 a 5). Nadie evalúa el proyecto de su propia mesa.</p></div><div class="kpi"><b id="pe-n">0</b><span>vecinos evaluaron</span></div></div><div class="mesagrid dos big" id="pe-g"></div>`},
+ mount(b){b.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-end"><div class="stack" style="gap:6px"><h1>Evaluación en vivo</h1><p class="sub">Puntaje = promedio de Atingencia, Deseabilidad, Factibilidad y Viabilidad (1 a 5). Los proyectos se muestran sin el número de mesa.</p></div><div class="kpi"><b id="pe-n">0</b><span>vecinos evaluaron</span></div></div><div class="mesagrid dos big" id="pe-g"></div>`},
  update(){
   const g=$('#pe-g');const R=calcRanking();tween($('#pe-n'),evaluadores().total,0);
-  const k=R.map(s=>s.id+s.ts).sort().join();if(g.dataset.k!==k){g.dataset.k=k;g.innerHTML=R.map(s=>fichaMenuHTML(s,{score:true})).join('')}
+  const k=R.map(s=>s.id+s.ts).sort().join();if(g.dataset.k!==k){g.dataset.k=k;g.innerHTML=R.map(s=>fichaMenuHTML(s,{score:true,anon:true})).join('')}
   const orden=R.map(s=>g.querySelector(`[data-mesa="${s.mesa}"]`)).filter(Boolean);
   R.forEach((s,i)=>{const c=g.querySelector(`[data-mesa="${s.mesa}"]`);if(!c)return;const ok=Number.isFinite(s.puntaje);
    c.querySelector('.rk1').textContent=ok?(i+1)+'°':'–';c.classList.toggle('lead1',ok&&i===0);
